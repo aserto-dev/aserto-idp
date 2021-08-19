@@ -1,0 +1,8 @@
+version: v1beta1
+name: buf.build/aserto-dev/aserto-idp
+deps:
+  - buf.build/aserto-dev/aserto
+build:
+  roots:
+    - pkg/proto
+  excludes:
