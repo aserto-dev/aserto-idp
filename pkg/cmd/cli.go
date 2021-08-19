@@ -17,6 +17,7 @@ type CLI struct {
 	AuthorizerOverride string     `name:"authorizer" env:"ASERTO_AUTHORIZER" help:"authorizer override"`
 	TenantOverride     string     `name:"tenant" env:"ASERTO_TENANT_ID" help:"tenant id override"`
 	EnvOverride        string     `name:"env" default:"${defaultEnv}" env:"ASERTO_ENV" hidden:"" help:"environment override"`
+	APIKey             string     `name:"api_key" env:"ASERTO_API_KEY" help:"Aserto API Key"`
 }
 
 func (cmd *CLI) Run(c *cc.CC) error {

@@ -28,6 +28,7 @@ type CC struct {
 	overrides   map[string]string
 	environment string
 	Provider    string
+	APIKey      string
 	_token      *api.Token
 }
 
@@ -67,6 +68,10 @@ func (ctx *CC) SetProvider(provider string) {
 
 func (ctx *CC) AccessToken() string {
 	return ctx.token().Access
+}
+
+func (ctx *CC) SetAPIKey(key string) {
+	ctx.APIKey = key
 }
 
 func (ctx *CC) Token() *api.Token {

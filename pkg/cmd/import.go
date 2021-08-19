@@ -21,7 +21,7 @@ func (cmd *ImportCmd) Run(c *cc.CC) error {
 	conn, err := authorizer.Connection(
 		c.Context,
 		c.AuthorizerService(),
-		grpcc.NewTokenAuth(c.AccessToken()),
+		grpcc.NewAPIKeyAuth(c.APIKey),
 	)
 	if err != nil {
 		return err

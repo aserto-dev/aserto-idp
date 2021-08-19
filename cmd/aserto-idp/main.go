@@ -12,40 +12,7 @@ import (
 
 func main() {
 	c := cc.New()
-
-	// client := plugin.NewClient(&plugin.ClientConfig{
-	// 	HandshakeConfig: shared.Handshake,
-	// 	Plugins:         shared.PluginMap,
-	// 	Cmd:             exec.Command("/home/florin_aserto_com/_code/aserto-idp/main"),
-	// 	AllowedProtocols: []plugin.Protocol{
-	// 		plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
-	// })
-	// defer client.Kill()
-
-	// rpcClient, err := client.Client()
-	// if err != nil {
-	// 	fmt.Println("Error:", err.Error())
-	// 	os.Exit(1)
-	// }
-
-	// // Request the plugin
-	// raw, err := rpcClient.Dispense("provider")
-	// if err != nil {
-	// 	fmt.Println("Error:", err.Error())
-	// 	os.Exit(1)
-	// }
-
-	// p := raw.(shared.Provider)
-	// pluginHelp, err := p.Help()
-	// var res shared.HelpMessage
-
-	// structpbconv.Convert(pluginHelp.HelpStruct, &res)
-
 	plugins := cmd.FindPlugins()
-	// help := []*shared.HelpMessage{}
-
-	// var help *shared.HelpMessage
-	// var err error
 
 	cli := cmd.CLI{}
 	for _, pl := range plugins {
@@ -74,6 +41,10 @@ func main() {
 
 	if cli.Debug {
 		c.SetLogger(os.Stderr)
+	}
+
+	if cli.APIKey != "" {
+		c.SetAPIKey(cli.APIKey)
 	}
 
 	if err := c.SetEnv(cli.EnvOverride); err != nil {
