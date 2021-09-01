@@ -5,9 +5,9 @@ deps:
     owner: aserto-dev
     repository: aserto
     branch: main
-    commit: 983ee8002e9e4bc68db1e391a7c07fd0
-    digest: b1-M3WemwYxAqtcErXiwBTlzzo2zMwZuJYc7xuqXwGLTPU=
-    create_time: 2021-08-17T15:48:45.208053Z
+    commit: 08f817f9952b4f1e8fef9dd838500477
+    digest: b1-WYd4DRDCOruB1H-0cjfrArG2b7CSXC2p-OwRFFWDZN8=
+    create_time: 2021-08-27T00:51:48.316692Z
   - remote: buf.build
     owner: aserto-dev
     repository: ext
