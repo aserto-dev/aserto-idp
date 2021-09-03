@@ -123,7 +123,10 @@ func (s PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportSe
 				User: &u,
 			},
 		}
-		srv.Send(res)
+		if err = srv.Send(res); err != nil {
+			log.Println(err)
+			return err
+		}
 	}
 
 	if _, err = dec.Token(); err != nil {
