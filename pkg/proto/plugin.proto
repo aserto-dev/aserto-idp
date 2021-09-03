@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+option go_package = "github.com/aserto-dev/aserto-idp/pkg/proto;proto";
+
+package proto;
+
+import "aserto/api/v1/user.proto";
+import "google/protobuf/struct.proto";
+import "google/rpc/status.proto";
+
+// message HelpRequest {
+// }
+
+// message HelpResponse {
+//     google.protobuf.Struct HelpStruct = 1;
+// }
+
+// message Option{
+//     string name=1;
+//     string description=2;
+//     OptionType type=3;
+// }
+// message HelpResponse {
+//     repeated Option option=1;
+// }
+
+// enum OptionType {
+//     OPTION_TYPE_UNKNOWN=0;
+//     OPTION_TYPE_STRING=1;
+//     OPTION_TYPE_BOOL=2;
+//     OPTION_TYPE_INT=3;
+// }
+
+// message ImportRequest{
+//     // needs to be struct
+//     map<string,string> options=1;
+//     oneof data {
+//         aserto.api.v1.User user = 3;
+//         aserto.api.v1.UserExt user_ext = 4;
+//       }
+// }
+
+// message ImportResponse{
+//     int32 succededCount=1;
+//     int32 failCount=2;
+//     repeated google.rpc.Status status = 3;
+// }
+
+message ExportRequest{
+    map<string,string> options=1;
+}
+
+message ExportResponse{
+    oneof data {
+        aserto.api.v1.User user = 3;
+        aserto.api.v1.UserExt user_ext = 4;
+      }
+    google.rpc.Status status = 5;
+}
+
+// message DeleteRequest{
+//     map<string,string> options=1;
+//     oneof data {
+//         aserto.api.v1.User user = 3;
+//         aserto.api.v1.UserExt user_ext = 4;
+//       }
+// }
+
+// message DeleteResponse{
+//      int32 succededCount=1;
+//      int32 failCount=2;
+//      repeated google.rpc.Status status = 3;
+// }
+
+// message ValidateRequest{
+//     map<string,string> options=1;
+// }
+
+// message ValidateResponse{
+//     google.rpc.Status status = 1;
+// }
+
+
+service Plugin {
+    // rpc Help(HelpRequest) returns (HelpResponse);
+    // rpc Import(stream ImportRequest) returns (ImportResponse);
+    rpc Export(ExportRequest) returns (stream ExportResponse);
+    // rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+    // rpc Validate(ValidateRequest) returns (ValidateResponse);
+}

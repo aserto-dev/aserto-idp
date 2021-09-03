@@ -2,11 +2,7 @@
 package shared
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
-
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
+	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	plugin "github.com/hashicorp/go-plugin"
 )
 
@@ -23,31 +19,31 @@ var Handshake = plugin.HandshakeConfig{
 }
 
 // PluginMap is the map of plugins we can dispense.
-var PluginMap = map[string]plugin.Plugin{
-	"json": &ProviderPlugin{},
+var PluginMap = plugin.PluginSet{
+	"json": &grpcplugin.PluginGRPC{},
 }
 
 // Provider is the interface that we're exposing as a plugin.
-type Provider interface {
-	LoadUsers(source string) (*proto.LoadUsersResponse, error)
-	Help() (*proto.HelpResponse, error)
-}
+// type Provider interface {
+// 	LoadUsers(source string) (*proto.LoadUsersResponse, error)
+// 	Help() (*proto.HelpResponse, error)
+// }
 
-// This is the implementation of plugin.GRPCPlugin so we can serve/consume this.
-type ProviderPlugin struct {
-	// GRPCPlugin must still implement the Plugin interface
-	plugin.Plugin
-	// Concrete implementation, written in Go. This is only used for plugins
-	// that are written in Go.
-	Impl Provider
-}
+// // This is the implementation of plugin.GRPCPlugin so we can serve/consume this.
+// type ProviderPlugin struct {
+// 	// GRPCPlugin must still implement the Plugin interface
+// 	plugin.Plugin
+// 	// Concrete implementation, written in Go. This is only used for plugins
+// 	// that are written in Go.
+// 	Impl Provider
+// }
 
-func (p *ProviderPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	// proto.RegisterProviderServer(s, &GRPCServer{Impl: p.Impl})
-	proto.RegisterProviderServer(s, &GRPCServer{Impl: p.Impl})
-	return nil
-}
+// func (p *ProviderPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
+// 	// proto.RegisterProviderServer(s, &GRPCServer{Impl: p.Impl})
+// 	proto.RegisterProviderServer(s, &GRPCServer{Impl: p.Impl})
+// 	return nil
+// }
 
-func (p *ProviderPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
-	return &GRPCClient{client: proto.NewProviderClient(c)}, nil
-}
+// func (p *ProviderPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
+// 	return &GRPCClient{client: proto.NewProviderClient(c)}, nil
+// }

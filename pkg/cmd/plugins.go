@@ -9,8 +9,8 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/aserto-idp/shared"
+	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	plugin "github.com/hashicorp/go-plugin"
-	"github.com/jkawamoto/structpbconv"
 )
 
 func FindPlugins() map[string]string {
@@ -37,7 +37,7 @@ func FindPlugins() map[string]string {
 	return plugins
 }
 
-func LoadPlugin(name, path string) (shared.Provider, error) {
+func LoadPlugin(name, path string) (grpcplugin.PluginClient, error) {
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
@@ -58,7 +58,7 @@ func LoadPlugin(name, path string) (shared.Provider, error) {
 		return nil, err
 	}
 
-	p := raw.(shared.Provider)
+	p := raw.(grpcplugin.PluginClient)
 	return p, nil
 }
 
@@ -83,11 +83,11 @@ func GetPluginHelp(path string) (*shared.HelpMessage, error) {
 		return nil, err
 	}
 
-	p := raw.(shared.Provider)
-	pluginHelp, err := p.Help()
+	p := raw.(grpcplugin.PluginClient)
+	// pluginHelp, err := p.Help()
 	var res shared.HelpMessage
-
-	structpbconv.Convert(pluginHelp.HelpStruct, &res)
+	fmt.Println(p)
+	// structpbconv.Convert(pluginHelp.HelpStruct, &res)
 	return &res, nil
 }
 

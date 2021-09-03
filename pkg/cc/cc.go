@@ -12,7 +12,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc"
 	"github.com/aserto-dev/aserto-idp/pkg/keyring"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
-	"github.com/aserto-dev/aserto-idp/shared"
+	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	"github.com/aserto-dev/go-lib/logger"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -23,7 +23,7 @@ import (
 type CC struct {
 	Context     context.Context
 	Log         *zerolog.Logger
-	Plugin      shared.Provider
+	Plugin      grpcplugin.PluginClient
 	services    *grpcc.Services
 	overrides   map[string]string
 	environment string
@@ -58,7 +58,7 @@ func (ctx *CC) Override(key, value string) {
 	ctx.overrides[key] = value
 }
 
-func (ctx *CC) SetPlugin(plugin shared.Provider) {
+func (ctx *CC) SetPlugin(plugin grpcplugin.PluginClient) {
 	ctx.Plugin = plugin
 }
 
