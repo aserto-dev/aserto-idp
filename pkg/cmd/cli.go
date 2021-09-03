@@ -10,7 +10,7 @@ import (
 
 type CLI struct {
 	Version            VersionCmd `cmd:"" help:"version information"`
-	Import             ImportCmd  `cmd:"" help:"import users"`
+	Export             ExportCmd  `cmd:"" help:"import users"`
 	Provider           string     `required:"" help:"import users provider (json)" enum:"json"`
 	Verbose            bool       `name:"verbose" help:"verbose output"`
 	Debug              bool       `name:"debug" env:"ASERTO_DEBUG" help:"enable debug logging"`

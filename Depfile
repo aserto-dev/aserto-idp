@@ -1,8 +1,8 @@
 ---
 go:
-  calc-version:
-    importPath: "github.com/aserto-dev/calc-version"
-    version: "v1.1.2"
+  sver:
+    importPath: "github.com/aserto-dev/sver/cmd/sver"
+    version: "v1.2.14"
   gotestsum:
     importPath: "gotest.tools/gotestsum"
     version: "v1.6.2"

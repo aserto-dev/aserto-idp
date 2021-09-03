@@ -18,7 +18,7 @@ func main() {
 	for _, pl := range plugins {
 		h, err := cmd.GetPluginHelp(pl)
 		if err == nil {
-			cli.Import.Plugins = append(cli.Import.Plugins, h)
+			cli.Export.Plugins = append(cli.Export.Plugins, h)
 		}
 	}
 

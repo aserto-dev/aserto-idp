@@ -14,7 +14,7 @@ import (
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 )
 
-type ImportCmd struct {
+type ExportCmd struct {
 	InclUserExt bool
 	Source      string
 	context     *cc.CC
@@ -23,7 +23,7 @@ type ImportCmd struct {
 
 // type HelpStruct struct{}
 
-func (cmd *ImportCmd) Run(c *cc.CC) error {
+func (cmd *ExportCmd) Run(c *cc.CC) error {
 	cmd.context = c
 	conn, err := authorizer.Connection(
 		c.Context,

@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/aserto-dev/mage-loot/buf"
 	"github.com/aserto-dev/mage-loot/common"
 	"github.com/aserto-dev/mage-loot/deps"
 	"github.com/magefile/mage/mg"
@@ -25,6 +26,14 @@ func init() {
 // Generate generates all code.
 func Generate() error {
 	return common.Generate()
+}
+
+// TODO: Will be moved to Proto repo
+func GenerateProto() error {
+	// Build generate
+	return buf.Run(
+		buf.AddArg("generate"),
+	)
 }
 
 // Build builds all binaries in ./cmd.

@@ -13,7 +13,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/keyring"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
-	"github.com/aserto-dev/go-lib/logger"
+	"github.com/aserto-dev/go-utils/logger"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
