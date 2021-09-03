@@ -59,7 +59,6 @@ func (cmd *ExportCmd) Run(c *cc.CC) error {
 		c.Log.Debug().Msg(err.Error())
 	}
 
-	users := []*api.User{}
 	for {
 		resp, err := client.Recv()
 		if err == io.EOF {
@@ -70,13 +69,15 @@ func (cmd *ExportCmd) Run(c *cc.CC) error {
 			log.Fatalf("cannot receive %v", err)
 		}
 		log.Printf("Resp received: %s", resp.Data)
-		// u := resp.Data.(proto.ExportResponse_User).User
-		// users = append(users, &u)
-	}
+		switch u := resp.Data.(type) {
+		case *proto.ExportResponse_User:
+			{
+				s <- u.User
+			}
+		case *proto.ExportResponse_UserExt:
+			{
 
-	if users != nil {
-		for _, u := range users {
-			s <- u
+			}
 		}
 	}
 
