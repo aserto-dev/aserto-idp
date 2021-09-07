@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
 	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
-	// rpc Import(stream ImportRequest) returns (ImportResponse);
+	Import(ctx context.Context, opts ...grpc.CallOption) (Plugin_ImportClient, error)
 	Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error)
 }
 
@@ -40,8 +40,42 @@ func (c *pluginClient) Info(ctx context.Context, in *InfoRequest, opts ...grpc.C
 	return out, nil
 }
 
+func (c *pluginClient) Import(ctx context.Context, opts ...grpc.CallOption) (Plugin_ImportClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[0], "/proto.Plugin/Import", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pluginImportClient{stream}
+	return x, nil
+}
+
+type Plugin_ImportClient interface {
+	Send(*ImportRequest) error
+	CloseAndRecv() (*ImportResponse, error)
+	grpc.ClientStream
+}
+
+type pluginImportClient struct {
+	grpc.ClientStream
+}
+
+func (x *pluginImportClient) Send(m *ImportRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *pluginImportClient) CloseAndRecv() (*ImportResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ImportResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *pluginClient) Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[0], "/proto.Plugin/Export", opts...)
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[1], "/proto.Plugin/Export", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +111,7 @@ func (x *pluginExportClient) Recv() (*ExportResponse, error) {
 // for forward compatibility
 type PluginServer interface {
 	Info(context.Context, *InfoRequest) (*InfoResponse, error)
-	// rpc Import(stream ImportRequest) returns (ImportResponse);
+	Import(Plugin_ImportServer) error
 	Export(*ExportRequest, Plugin_ExportServer) error
 }
 
@@ -87,6 +121,9 @@ type UnimplementedPluginServer struct {
 
 func (UnimplementedPluginServer) Info(context.Context, *InfoRequest) (*InfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Info not implemented")
+}
+func (UnimplementedPluginServer) Import(Plugin_ImportServer) error {
+	return status.Errorf(codes.Unimplemented, "method Import not implemented")
 }
 func (UnimplementedPluginServer) Export(*ExportRequest, Plugin_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
@@ -119,6 +156,32 @@ func _Plugin_Info_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		return srv.(PluginServer).Info(ctx, req.(*InfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Plugin_Import_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PluginServer).Import(&pluginImportServer{stream})
+}
+
+type Plugin_ImportServer interface {
+	SendAndClose(*ImportResponse) error
+	Recv() (*ImportRequest, error)
+	grpc.ServerStream
+}
+
+type pluginImportServer struct {
+	grpc.ServerStream
+}
+
+func (x *pluginImportServer) SendAndClose(m *ImportResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *pluginImportServer) Recv() (*ImportRequest, error) {
+	m := new(ImportRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func _Plugin_Export_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -155,6 +218,11 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Import",
+			Handler:       _Plugin_Import_Handler,
+			ClientStreams: true,
+		},
 		{
 			StreamName:    "Export",
 			Handler:       _Plugin_Export_Handler,
