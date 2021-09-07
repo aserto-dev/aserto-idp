@@ -52,20 +52,19 @@ message ConfigElement {
     bool read_only = 8;
   }
 
-// message ImportRequest{
-//     // needs to be struct
-//     map<string,string> options=1;
-//     oneof data {
-//         aserto.api.v1.User user = 3;
-//         aserto.api.v1.UserExt user_ext = 4;
-//       }
-// }
+message ImportRequest{
+    // needs to be struct
+    map<string,string> options=1;
+    oneof data {
+        aserto.api.v1.User user = 3;
+        aserto.api.v1.UserExt user_ext = 4;
+      }
+}
 
-// message ImportResponse{
-//     int32 succededCount=1;
-//     int32 failCount=2;
-//     repeated google.rpc.Status status = 3;
-// }
+message ImportResponse{
+    int32 succededCount=1;
+    int32 failCount=2;
+}
 
 message ExportRequest{
     map<string,string> options=1;
@@ -76,7 +75,6 @@ message ExportResponse{
         aserto.api.v1.User user = 3;
         aserto.api.v1.UserExt user_ext = 4;
       }
-    google.rpc.Status status = 5;
 }
 
 // message DeleteRequest{
@@ -106,7 +104,7 @@ message ExportResponse{
 
 service Plugin {
     rpc Info(InfoRequest) returns (InfoResponse);
-    // rpc Import(stream ImportRequest) returns (ImportResponse);
+    rpc Import(stream ImportRequest) returns (ImportResponse);
     rpc Export(ExportRequest) returns (stream ExportResponse);
     // rpc Delete(stream DeleteRequest) returns (DeleteResponse);
     // rpc Validate(ValidateRequest) returns (ValidateResponse);

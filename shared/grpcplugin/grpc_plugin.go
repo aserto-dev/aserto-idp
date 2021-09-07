@@ -47,9 +47,9 @@ func (s *pluginGRPCServer) Info(ctx context.Context, req *proto.InfoRequest) (*p
 	return s.server.Info(ctx, req)
 }
 
-// func (s *pluginGRPCServer) Import(srv proto.Plugin_ImportServer) error {
-// 	return s.Impl.Import(srv)
-// }
+func (s *pluginGRPCServer) Import(srv proto.Plugin_ImportServer) error {
+	return s.server.Import(srv)
+}
 
 func (s *pluginGRPCServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 	return s.server.Export(req, srv)
@@ -71,9 +71,9 @@ func (c *pluginGRPCClient) Info(ctx context.Context, in *proto.InfoRequest, opts
 	return c.client.Info(ctx, in, opts...)
 }
 
-// func (c *pluginGRPCClient) Import(ctx context.Context, opts ...grpc.CallOption) (proto.Plugin_ImportClient, error) {
-// 	return c.client.Import(ctx, opts...)
-// }
+func (c *pluginGRPCClient) Import(ctx context.Context, opts ...grpc.CallOption) (proto.Plugin_ImportClient, error) {
+	return c.client.Import(ctx, opts...)
+}
 
 func (c *pluginGRPCClient) Export(ctx context.Context, in *proto.ExportRequest, opts ...grpc.CallOption) (proto.Plugin_ExportClient, error) {
 	return c.client.Export(ctx, in, opts...)
