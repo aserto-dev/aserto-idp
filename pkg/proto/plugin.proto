@@ -8,28 +8,49 @@ import "aserto/api/v1/user.proto";
 import "google/protobuf/struct.proto";
 import "google/rpc/status.proto";
 
-// message HelpRequest {
-// }
+message InfoRequest {
+}
 
-// message HelpResponse {
-//     google.protobuf.Struct HelpStruct = 1;
-// }
+message InfoResponse {
+    // Use info from https://github.com/aserto-dev/proto/blob/main/public/aserto/common/info/v1/info.proto#L37 ??
+    string system = 1;
+    string version = 2;
+    string build = 3;
+    repeated ConfigElement config = 4;
+}
 
-// message Option{
-//     string name=1;
-//     string description=2;
-//     OptionType type=3;
-// }
-// message HelpResponse {
-//     repeated Option option=1;
-// }
 
-// enum OptionType {
-//     OPTION_TYPE_UNKNOWN=0;
-//     OPTION_TYPE_STRING=1;
-//     OPTION_TYPE_BOOL=2;
-//     OPTION_TYPE_INT=3;
-// }
+// Use config from: https://github.com/aserto-dev/proto/blob/main/public/aserto/api/v1/connection.proto#L71 ??
+enum ConfigElementKind {
+    CONFIG_ELEMENT_KIND_UNKNOWN     = 0; // Unknown configuration element kind
+    CONFIG_ELEMENT_KIND_ATTRIBUTE   = 1; // Normal attribute
+    CONFIG_ELEMENT_KIND_SECRET      = 2; // Secret
+    CONFIG_ELEMENT_KIND_CERTIFICATE = 3; // Certificate
+  }
+  
+  enum ConfigElementType {
+    CONFIG_ELEMENT_TYPE_UNKNOWN     = 0;
+    CONFIG_ELEMENT_TYPE_STRING      = 1;
+    CONFIG_ELEMENT_TYPE_INTEGER     = 2;
+    CONFIG_ELEMENT_TYPE_BOOLEAN     = 3;
+  }
+  
+  enum DisplayMode {
+    DISPLAY_MODE_UNKNOWN            = 0;
+    DISPLAY_MODE_NORMAL             = 1;
+    DISPLAY_MODE_MASKED             = 2;
+  }
+
+message ConfigElement {
+    int32 id = 1;
+    ConfigElementKind kind = 2;
+    ConfigElementType type = 3;
+    string name = 4;
+    string description = 5;
+    string usage = 6;
+    DisplayMode mode = 7;
+    bool read_only = 8;
+  }
 
 // message ImportRequest{
 //     // needs to be struct
@@ -81,8 +102,10 @@ message ExportResponse{
 // }
 
 
+
+
 service Plugin {
-    // rpc Help(HelpRequest) returns (HelpResponse);
+    rpc Info(InfoRequest) returns (InfoResponse);
     // rpc Import(stream ImportRequest) returns (ImportResponse);
     rpc Export(ExportRequest) returns (stream ExportResponse);
     // rpc Delete(stream DeleteRequest) returns (DeleteResponse);

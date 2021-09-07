@@ -84,6 +84,7 @@ func GetPluginHelp(path string) (*shared.HelpMessage, error) {
 	}
 
 	p := raw.(grpcplugin.PluginClient)
+	// p.Info(context)
 	// pluginHelp, err := p.Help()
 	var res shared.HelpMessage
 	fmt.Println(p)

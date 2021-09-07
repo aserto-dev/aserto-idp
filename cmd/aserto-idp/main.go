@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/alecthomas/kong"
@@ -10,22 +11,47 @@ import (
 	"github.com/pkg/errors"
 )
 
+type VetaCMD struct {
+}
+
+func (v *VetaCMD) Run() error {
+	return nil
+}
+
+// type plug struct {
+// 	Vata  VetaCMD `cmd`
+// 	param string
+// }
+
+//plugJson := `{"cmd":"mycmd"}`
+
 func main() {
 	c := cc.New()
 	plugins := cmd.FindPlugins()
 
 	cli := cmd.CLI{}
-	for _, pl := range plugins {
-		h, err := cmd.GetPluginHelp(pl)
-		if err == nil {
-			cli.Export.Plugins = append(cli.Export.Plugins, h)
-		}
+	for _, plugin := range plugins {
+		//help, err := cmd.GetPluginHelp(plugin)
+		fmt.Println("!!!!!!!! -- " + plugin)
+		// varPlugMap := make(map[string]VetaCMD)
+		// varPlugMap["value"] = VetaCMD{}
+		//if err == nil {
+		//cli.Plugins = append(cli.Plugins, &plug{})
+		//}
 	}
+
+	// var beforeApplt kong.BeforeApply = nil
+	// var object kong.BeforeApply = func() {
+	// 	fmt.Println("eureka!")
+	// }
+	opt := kong.DynamicCommand("ion", "this is a json plugin", "Plugins", &VetaCMD{})
 
 	ctx := kong.Parse(&cli,
 		kong.Name(x.AppName),
 		kong.Description(x.AppDescription),
 		kong.UsageOnError(),
+		//kong.NamedMapper("moo", testMooMapper{}),
+		opt,
 		kong.ConfigureHelp(kong.HelpOptions{
 			NoAppSummary:        false,
 			Summary:             false,
@@ -36,7 +62,7 @@ func main() {
 			NoExpandSubcommands: false,
 		}),
 		kong.Vars{"defaultEnv": x.DefaultEnv},
-		kong.Bind(&cli),
+		//kong.Bind(&cli),
 	)
 
 	if cli.Debug {
@@ -60,7 +86,7 @@ func main() {
 	}
 
 	if cli.Provider != "" {
-		plugin, _ := cmd.LoadPlugin(cli.Provider, plugins[cli.Provider])
+		plugin, _ := cmd.LoadPlugin(string(cli.Provider), plugins[string(cli.Provider)])
 		c.SetPlugin(plugin)
 	}
 

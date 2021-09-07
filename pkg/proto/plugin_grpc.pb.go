@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
-	// rpc Help(HelpRequest) returns (HelpResponse);
+	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
 	// rpc Import(stream ImportRequest) returns (ImportResponse);
 	Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error)
 }
@@ -29,6 +29,15 @@ type pluginClient struct {
 
 func NewPluginClient(cc grpc.ClientConnInterface) PluginClient {
 	return &pluginClient{cc}
+}
+
+func (c *pluginClient) Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error) {
+	out := new(InfoResponse)
+	err := c.cc.Invoke(ctx, "/proto.Plugin/Info", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *pluginClient) Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error) {
@@ -67,7 +76,7 @@ func (x *pluginExportClient) Recv() (*ExportResponse, error) {
 // All implementations should embed UnimplementedPluginServer
 // for forward compatibility
 type PluginServer interface {
-	// rpc Help(HelpRequest) returns (HelpResponse);
+	Info(context.Context, *InfoRequest) (*InfoResponse, error)
 	// rpc Import(stream ImportRequest) returns (ImportResponse);
 	Export(*ExportRequest, Plugin_ExportServer) error
 }
@@ -76,6 +85,9 @@ type PluginServer interface {
 type UnimplementedPluginServer struct {
 }
 
+func (UnimplementedPluginServer) Info(context.Context, *InfoRequest) (*InfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Info not implemented")
+}
 func (UnimplementedPluginServer) Export(*ExportRequest, Plugin_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
 }
@@ -89,6 +101,24 @@ type UnsafePluginServer interface {
 
 func RegisterPluginServer(s grpc.ServiceRegistrar, srv PluginServer) {
 	s.RegisterService(&Plugin_ServiceDesc, srv)
+}
+
+func _Plugin_Info_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).Info(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Plugin/Info",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).Info(ctx, req.(*InfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Plugin_Export_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -118,7 +148,12 @@ func (x *pluginExportServer) Send(m *ExportResponse) error {
 var Plugin_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Plugin",
 	HandlerType: (*PluginServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Info",
+			Handler:    _Plugin_Info_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Export",

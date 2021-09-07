@@ -43,9 +43,9 @@ type pluginGRPCServer struct {
 	server proto.PluginServer
 }
 
-// func (s *pluginGRPCServer) Help(ctx context.Context, req *proto.HelpRequest) (*proto.HelpResponse, error) {
-// 	return s.Impl.Help(ctx, req)
-// }
+func (s *pluginGRPCServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
+	return s.server.Info(ctx, req)
+}
 
 // func (s *pluginGRPCServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return s.Impl.Import(srv)
@@ -67,9 +67,9 @@ type pluginGRPCClient struct {
 	client proto.PluginClient
 }
 
-// func (c *pluginGRPCClient) Help(ctx context.Context, in *proto.HelpRequest, opts ...grpc.CallOption) (*proto.HelpResponse, error) {
-// 	return c.client.Help(ctx, in, opts...)
-// }
+func (c *pluginGRPCClient) Info(ctx context.Context, in *proto.InfoRequest, opts ...grpc.CallOption) (*proto.InfoResponse, error) {
+	return c.client.Info(ctx, in, opts...)
+}
 
 // func (c *pluginGRPCClient) Import(ctx context.Context, opts ...grpc.CallOption) (proto.Plugin_ImportClient, error) {
 // 	return c.client.Import(ctx, opts...)

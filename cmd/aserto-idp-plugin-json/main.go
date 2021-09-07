@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -82,9 +83,26 @@ func main() {
 
 type PluginServer struct{}
 
-// func (s pluginServer) Help(ctx context.Context, req *proto.HelpRequest) (*proto.HelpResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+func (s PluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
+	response := proto.InfoResponse{}
+	response.Build = "placeholder"
+	response.System = ""
+	response.Version = "placeholder"
+	response.Config = []*proto.ConfigElement{
+		{
+			Id:          1,
+			Kind:        proto.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
+			Type:        proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
+			Name:        "file",
+			Description: "The JSON file",
+			Usage:       "--file",
+			Mode:        proto.DisplayMode_DISPLAY_MODE_NORMAL,
+			ReadOnly:    false,
+		},
+	}
+
+	return &response, nil
+}
 
 // func (s pluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
