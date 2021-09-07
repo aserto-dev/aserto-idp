@@ -46,6 +46,11 @@ func Build() error {
 	return common.Build(flags...)
 }
 
+// Cleans the bin director
+func Clean() error {
+	return os.RemoveAll("bin")
+}
+
 // BuildAll builds all binaries in ./cmd for
 // all configured operating systems and architectures.
 func BuildAll() error {
