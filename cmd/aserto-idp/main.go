@@ -1,57 +1,34 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/cmd"
+	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/pkg/errors"
 )
 
-type VetaCMD struct {
-}
-
-func (v *VetaCMD) Run() error {
-	return nil
-}
-
-// type plug struct {
-// 	Vata  VetaCMD `cmd`
-// 	param string
-// }
-
-//plugJson := `{"cmd":"mycmd"}`
-
 func main() {
 	c := cc.New()
-	plugins := cmd.FindPlugins()
 
 	cli := cmd.CLI{}
-	for _, plugin := range plugins {
-		//help, err := cmd.GetPluginHelp(plugin)
-		fmt.Println("!!!!!!!! -- " + plugin)
-		// varPlugMap := make(map[string]VetaCMD)
-		// varPlugMap["value"] = VetaCMD{}
-		//if err == nil {
-		//cli.Plugins = append(cli.Plugins, &plug{})
-		//}
+
+	envFinder := finder.NewEnvironment()
+
+	pluginOptions, err := cmd.LoadPlugins(envFinder)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	// var beforeApplt kong.BeforeApply = nil
-	// var object kong.BeforeApply = func() {
-	// 	fmt.Println("eureka!")
-	// }
-	opt := kong.DynamicCommand("ion", "this is a json plugin", "Plugins", &VetaCMD{})
-
-	ctx := kong.Parse(&cli,
+	options := []kong.Option{
 		kong.Name(x.AppName),
 		kong.Description(x.AppDescription),
 		kong.UsageOnError(),
-		//kong.NamedMapper("moo", testMooMapper{}),
-		opt,
+
 		kong.ConfigureHelp(kong.HelpOptions{
 			NoAppSummary:        false,
 			Summary:             false,
@@ -62,8 +39,10 @@ func main() {
 			NoExpandSubcommands: false,
 		}),
 		kong.Vars{"defaultEnv": x.DefaultEnv},
-		//kong.Bind(&cli),
-	)
+	}
+	options = append(options, pluginOptions...)
+
+	ctx := kong.Parse(&cli, options...)
 
 	if cli.Debug {
 		c.SetLogger(os.Stderr)
@@ -85,11 +64,6 @@ func main() {
 		c.Override(x.AuthorizerOverride, cli.AuthorizerOverride)
 	}
 
-	if cli.Provider != "" {
-		plugin, _ := cmd.LoadPlugin(string(cli.Provider), plugins[string(cli.Provider)])
-		c.SetPlugin(plugin)
-	}
-
-	err := ctx.Run(c)
+	err = ctx.Run(c)
 	ctx.FatalIfErrorf(err)
 }
