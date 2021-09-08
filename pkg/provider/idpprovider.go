@@ -34,7 +34,7 @@ func (idpProvider *IDPProvider) GetPath() string {
 	return idpProvider.Path
 }
 
-func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
+func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) {
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
@@ -42,7 +42,6 @@ func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
 	})
-	defer client.Kill()
 
 	rpcClient, err := client.Client()
 	if err != nil {
@@ -50,11 +49,19 @@ func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense("idpplugin")
+	raw, err := rpcClient.Dispense("idp-plugin")
 	if err != nil {
 		return nil, err
 	}
-	pluginClient := raw.(grpcplugin.PluginClient)
+	return raw.(grpcplugin.PluginClient), nil
+}
+
+func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
+	pluginClient, err := idpProvider.PluginClient()
+	if err != nil {
+		return nil, err
+	}
+
 	infoResponse, err := pluginClient.Info(context.Background(), &proto.InfoRequest{})
 	if err != nil {
 		return nil, err

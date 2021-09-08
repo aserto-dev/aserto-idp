@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
-	"github.com/pkg/errors"
 )
 
 func main() {
@@ -43,27 +43,16 @@ func main() {
 	options = append(options, pluginOptions...)
 
 	ctx := kong.Parse(&cli, options...)
+	c.Command = strings.Fields(ctx.Command())[0]
 
 	if cli.Debug {
 		c.SetLogger(os.Stderr)
 	}
 
-	if cli.APIKey != "" {
-		c.SetAPIKey(cli.APIKey)
+	err = cmd.SetPluginContext(c, envFinder)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-
-	if err := c.SetEnv(cli.EnvOverride); err != nil {
-		ctx.FatalIfErrorf(errors.Wrapf(err, "set environment [%s]", cli.EnvOverride))
-	}
-
-	if cli.TenantOverride != "" {
-		c.Override(x.TenantIDOverride, cli.TenantOverride)
-	}
-
-	if cli.AuthorizerOverride != "" {
-		c.Override(x.AuthorizerOverride, cli.AuthorizerOverride)
-	}
-
 	err = ctx.Run(c)
 	ctx.FatalIfErrorf(err)
 }

@@ -3,9 +3,17 @@ package srv
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
+	"strconv"
 
+	"github.com/aserto-dev/aserto-idp/pkg/grpcc"
+	"github.com/aserto-dev/aserto-idp/pkg/grpcc/authorizer"
+	"github.com/aserto-dev/aserto-idp/pkg/grpcc/directory"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/aserto/config"
+	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
 )
 
 type AsertoPluginServer struct{}
@@ -20,9 +28,66 @@ func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*
 	return &response, nil
 }
 
-// func (s pluginServer) Import(srv proto.Plugin_ImportServer) error {
-// 	return fmt.Errorf("not implemented")
-// }
+func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
+	var dirClient *dir.DirectoryClient
+
+	users := make(chan *api.User, 10)
+	done := make(chan bool, 1)
+	errc := make(chan error, 1)
+
+	for {
+		req, err := srv.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if dirClient == nil {
+			authorizerService := req.Options["authorizer"]
+			apiKey := req.Options["api_key"]
+			tenant := req.Options["tenant"]
+			includeExt, err := strconv.ParseBool(req.Options["include_ext"])
+			if err != nil {
+				return err
+			}
+
+			ctx := context.Background()
+
+			conn, err := authorizer.Connection(
+				ctx,
+				authorizerService,
+				grpcc.NewAPIKeyAuth(apiKey),
+			)
+			if err != nil {
+				return err
+			}
+
+			ctx = grpcc.SetTenantContext(ctx, tenant)
+			dirClient := conn.DirectoryClient()
+
+			go func() {
+				for e := range errc {
+					log.Println(e.Error())
+				}
+			}()
+
+			go directory.Subscriber(ctx, dirClient, users, done, errc, includeExt)
+		}
+
+		switch u := req.Data.(type) {
+		case *proto.ImportRequest_User:
+			{
+				users <- u.User
+			}
+		case *proto.ImportRequest_UserExt:
+			{
+
+			}
+		}
+	}
+	return nil
+}
 
 // func (s pluginServer) Delete(srv proto.Plugin_DeleteServer) error {
 // 	return fmt.Errorf("not implemented")
