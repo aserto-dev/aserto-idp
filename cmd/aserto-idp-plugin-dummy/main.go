@@ -9,7 +9,7 @@ import (
 
 func main() {
 	pSet := make(plugin.PluginSet)
-	pSet["idpplugin"] = &grpcplugin.PluginGRPC{
+	pSet["idp-plugin"] = &grpcplugin.PluginGRPC{
 		Impl: &srv.DummyPluginServer{},
 	}
 	plugin.Serve(&plugin.ServeConfig{
