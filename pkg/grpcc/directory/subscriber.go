@@ -9,8 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Result struct {
+	Counts *dir.LoadUsersResponse
+	Err    error
+}
+
 // Subscriber subscribes to the api.User channel and sends the users instance to the directory using the gRPC LoadUsers API.
-func Subscriber(ctx context.Context, client dir.DirectoryClient, s <-chan *api.User, done chan<- bool, errc chan<- error, inclAttrSets bool) {
+func Subscriber(ctx context.Context, client dir.DirectoryClient, s <-chan *api.User, r chan<- *Result, errc chan<- error, inclAttrSets bool) {
 
 	stream, err := client.LoadUsers(ctx)
 	if err != nil {
@@ -48,7 +53,10 @@ func Subscriber(ctx context.Context, client dir.DirectoryClient, s <-chan *api.U
 		errc <- fmt.Errorf("send != received %d - %d", sendCount, res.Received)
 	}
 
-	done <- true
+	r <- &Result{
+		Counts: res,
+		Err:    err,
+	}
 }
 
 // UserExtSubscriber subscribes to the api.User channel and sends user extensions (api.UserExt message) to the directory using the gRPC LoadUser API.
