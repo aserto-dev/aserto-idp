@@ -13,7 +13,6 @@ import (
 type ExportCmd struct {
 	InclUserExt bool
 	Source      string
-	context     *cc.CC
 	kong.Plugins
 }
 

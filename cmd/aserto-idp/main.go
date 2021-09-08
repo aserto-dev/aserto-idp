@@ -49,7 +49,10 @@ func main() {
 		c.SetLogger(os.Stderr)
 	}
 
-	cmd.SetPluginContext(c, envFinder)
+	err = cmd.SetPluginContext(c, envFinder)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	err = ctx.Run(c)
 	ctx.FatalIfErrorf(err)
 }
