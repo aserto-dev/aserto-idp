@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/aserto-dev/aserto-idp/plugins/aserto/srv"
+	"github.com/aserto-dev/aserto-idp/plugins/dummy/srv"
 	"github.com/aserto-dev/aserto-idp/shared"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	plugin "github.com/hashicorp/go-plugin"
@@ -10,7 +10,7 @@ import (
 func main() {
 	pSet := make(plugin.PluginSet)
 	pSet["idpplugin"] = &grpcplugin.PluginGRPC{
-		Impl: &srv.AsertoPluginServer{},
+		Impl: &srv.DummyPluginServer{},
 	}
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: shared.Handshake,

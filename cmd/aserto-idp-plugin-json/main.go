@@ -69,7 +69,7 @@ import (
 
 func main() {
 	pSet := make(plugin.PluginSet)
-	pSet["json"] = &grpcplugin.PluginGRPC{
+	pSet["idpplugin"] = &grpcplugin.PluginGRPC{
 		Impl: &PluginServer{},
 	}
 	plugin.Serve(&plugin.ServeConfig{
