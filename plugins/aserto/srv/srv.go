@@ -14,6 +14,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/plugins/aserto/config"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
+	"github.com/pkg/errors"
 )
 
 type AsertoPluginServer struct{}
@@ -34,59 +35,87 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	users := make(chan *api.User, 10)
 	done := make(chan bool, 1)
 	errc := make(chan error, 1)
+	r := make(chan *directory.Result, 1)
 
-	for {
-		req, err := srv.Recv()
-		if err == io.EOF {
-			break
+	go func() {
+		for e := range errc {
+			log.Println(e.Error())
 		}
-		if err != nil {
-			return err
-		}
-		if dirClient == nil {
-			authorizerService := req.Options["authorizer"]
-			apiKey := req.Options["api_key"]
-			tenant := req.Options["tenant"]
-			includeExt, err := strconv.ParseBool(req.Options["include_ext"])
-			if err != nil {
-				return err
+	}()
+
+	go func() {
+		for {
+			req, err := srv.Recv()
+			if err == io.EOF {
+				done <- true
+				return
 			}
-
-			ctx := context.Background()
-
-			conn, err := authorizer.Connection(
-				ctx,
-				authorizerService,
-				grpcc.NewAPIKeyAuth(apiKey),
-			)
 			if err != nil {
-				return err
+				errc <- errors.Wrapf(err, "srv.Recv()")
 			}
-
-			ctx = grpcc.SetTenantContext(ctx, tenant)
-			dirClient := conn.DirectoryClient()
-
-			go func() {
-				for e := range errc {
-					log.Println(e.Error())
+			if dirClient == nil {
+				authorizerService := req.Options["authorizer"]
+				apiKey := req.Options["api_key"]
+				tenant := req.Options["tenant"]
+				includeExt, err := strconv.ParseBool(req.Options["include_ext"])
+				if err != nil {
+					errc <- err
 				}
-			}()
 
-			go directory.Subscriber(ctx, dirClient, users, done, errc, includeExt)
-		}
+				ctx := context.Background()
 
-		switch u := req.Data.(type) {
-		case *proto.ImportRequest_User:
-			{
-				users <- u.User
+				conn, err := authorizer.Connection(
+					ctx,
+					authorizerService,
+					grpcc.NewAPIKeyAuth(apiKey),
+				)
+				if err != nil {
+					errc <- errors.Wrapf(err, "authorizer.Connection")
+				}
+
+				ctx = grpcc.SetTenantContext(ctx, tenant)
+				dirClient := conn.DirectoryClient()
+
+				go directory.Subscriber(ctx, dirClient, users, r, errc, includeExt)
 			}
-		case *proto.ImportRequest_UserExt:
-			{
 
+			switch u := req.Data.(type) {
+			case *proto.ImportRequest_User:
+				{
+					users <- u.User
+				}
+			case *proto.ImportRequest_UserExt:
+				{
+
+				}
 			}
 		}
+	}()
+	// Wait for EOF
+	<-done
+
+	// close subscriber channel to indicate that the producer done
+	close(users)
+
+	// Waif for result from Directory
+	result := <-r
+
+	// TODO: (florind) Add more details here
+	res := &proto.ImportResponse{}
+	if result.Counts != nil {
+		res.SuccededCount = result.Counts.Created
+		res.FailCount = result.Counts.Errors
 	}
-	return nil
+
+	err := srv.SendAndClose(res)
+	if err != nil {
+		errc <- err
+	}
+
+	// close error channel as the last action before returning
+	close(errc)
+
+	return result.Err
 }
 
 // func (s pluginServer) Delete(srv proto.Plugin_DeleteServer) error {
