@@ -42,7 +42,7 @@ func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
 	})
-	//defer client.Kill()
+	defer client.Kill()
 
 	rpcClient, err := client.Client()
 	if err != nil {
@@ -50,7 +50,7 @@ func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense(idpProvider.Name)
+	raw, err := rpcClient.Dispense("idpplugin")
 	if err != nil {
 		return nil, err
 	}
