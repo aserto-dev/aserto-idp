@@ -20,7 +20,7 @@ var Handshake = plugin.HandshakeConfig{
 
 // PluginMap is the map of plugins we can dispense.
 var PluginMap = plugin.PluginSet{
-	"json": &grpcplugin.PluginGRPC{},
+	"idp-plugin": &grpcplugin.PluginGRPC{},
 }
 
 // Provider is the interface that we're exposing as a plugin.

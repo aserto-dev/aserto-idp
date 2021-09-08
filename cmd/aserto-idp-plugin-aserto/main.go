@@ -9,7 +9,7 @@ import (
 
 func main() {
 	pSet := make(plugin.PluginSet)
-	pSet["aserto"] = &grpcplugin.PluginGRPC{
+	pSet["idp-plugin"] = &grpcplugin.PluginGRPC{
 		Impl: &srv.AsertoPluginServer{},
 	}
 	plugin.Serve(&plugin.ServeConfig{

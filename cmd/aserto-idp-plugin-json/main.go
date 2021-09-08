@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -69,7 +70,7 @@ import (
 
 func main() {
 	pSet := make(plugin.PluginSet)
-	pSet["json"] = &grpcplugin.PluginGRPC{
+	pSet["idp-plugin"] = &grpcplugin.PluginGRPC{
 		Impl: &PluginServer{},
 	}
 	plugin.Serve(&plugin.ServeConfig{
@@ -151,5 +152,10 @@ func (s PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportSe
 		log.Println(err)
 		return err
 	}
+	return nil
+}
+
+func (s PluginServer) Import(srv proto.Plugin_ImportServer) error {
+	fmt.Println("import json")
 	return nil
 }
