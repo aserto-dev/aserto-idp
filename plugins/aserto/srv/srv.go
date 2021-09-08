@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc"
@@ -63,11 +64,11 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 			}
 
 			ctx = grpcc.SetTenantContext(ctx, tenant)
-			dirClient := *conn.DirectoryClient()
+			dirClient := conn.DirectoryClient()
 
 			go func() {
 				for e := range errc {
-					c.Log.Debug().Msg(fmt.Sprintf("%s\n", e.Error()))
+					log.Println(e.Error())
 				}
 			}()
 
@@ -85,6 +86,7 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 			}
 		}
 	}
+	return nil
 }
 
 // func (s pluginServer) Delete(srv proto.Plugin_DeleteServer) error {

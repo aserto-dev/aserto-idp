@@ -11,8 +11,8 @@ import (
 
 type CLI struct {
 	Version VersionCmd `cmd:"" help:"version information"`
-	Export  ExportCmd  `cmd:"" help:"import users"`
-	//	Provider           string `required:"" help:"import users provider (json)" enum:"json"`
+	// Export  ExportCmd  `cmd:"" help:"import users"`
+	// Provider           string `required:"" help:"import users provider (json)" enum:"json"`
 	Verbose            bool   `name:"verbose" help:"verbose output"`
 	Debug              bool   `name:"debug" env:"ASERTO_DEBUG" help:"enable debug logging"`
 	AuthorizerOverride string `name:"authorizer" env:"ASERTO_AUTHORIZER" help:"authorizer override"`

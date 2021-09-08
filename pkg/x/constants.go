@@ -1,10 +1,11 @@
 package x
 
 const (
-	Aserto         string = "aserto"
-	AppDisplayName string = "Aserto IDP CLI"
-	AppDescription string = "Welcome to modern authorization!"
-	PluginPrefix   string = "aserto-idp-plugin-"
+	Aserto            string = "aserto"
+	AppDisplayName    string = "Aserto IDP CLI"
+	AppDescription    string = "Welcome to modern authorization!"
+	PluginPrefix      string = "aserto-idp-plugin-"
+	DefaultPluginName string = "aserto"
 )
 
 // environments
