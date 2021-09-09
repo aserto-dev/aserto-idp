@@ -56,7 +56,7 @@ func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) 
 	return raw.(grpcplugin.PluginClient), nil
 }
 
-func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
+func (idpProvider *IDPProvider) Info() (*proto.InfoResponse, error) {
 	pluginClient, err := idpProvider.PluginClient()
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (idpProvider *IDPProvider) Configs() ([]*proto.ConfigElement, error) {
 		return nil, err
 	}
 
-	return infoResponse.Config, nil
+	return infoResponse, nil
 }
 
 func providerName(path string) string {

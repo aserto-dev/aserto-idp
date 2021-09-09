@@ -11,6 +11,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/plugins/json/config"
 	"github.com/aserto-dev/aserto-idp/shared/pb"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type JsonPluginServer struct{}
@@ -20,7 +21,8 @@ func (s JsonPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*pr
 	response.Build = "placeholder"
 	response.System = ""
 	response.Version = "placeholder"
-	response.Config = config.GetPluginConfig()
+	response.Description = "Json Plugin"
+	response.Configs = config.GetPluginConfig()
 
 	return &response, nil
 }
@@ -38,7 +40,19 @@ func (s JsonPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*pr
 // }
 
 func (s JsonPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
-	r, err := os.Open(req.Options["source"])
+
+	configBytes, err := protojson.Marshal(req.Config)
+	if err != nil {
+		return err
+	}
+
+	config := &config.JsonConfig{}
+	err = json.Unmarshal(configBytes, config)
+	if err != nil {
+		return err
+	}
+
+	r, err := os.Open(config.File)
 	if err != nil {
 		log.Println(err)
 		return err

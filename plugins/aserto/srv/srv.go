@@ -2,10 +2,10 @@ package srv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"strconv"
 
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc"
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/authorizer"
@@ -15,6 +15,7 @@ import (
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type AsertoPluginServer struct{}
@@ -24,7 +25,8 @@ func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*
 	response.Build = "placeholder"
 	response.System = ""
 	response.Version = "placeholder"
-	response.Config = config.GetPluginConfig()
+	response.Description = "Aserto IDP Plugin"
+	response.Configs = config.GetPluginConfig()
 
 	return &response, nil
 }
@@ -54,13 +56,21 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 				errc <- errors.Wrapf(err, "srv.Recv()")
 			}
 			if dirClient == nil {
-				authorizerService := req.Options["authorizer"]
-				apiKey := req.Options["api_key"]
-				tenant := req.Options["tenant"]
-				includeExt, err := strconv.ParseBool(req.Options["include_ext"])
+				configBytes, err := protojson.Marshal(req.Config)
 				if err != nil {
-					errc <- err
+					errc <- errors.Wrapf(err, "failed to marshal config message")
 				}
+
+				config := &config.AsertoConfig{}
+				err = json.Unmarshal(configBytes, config)
+				if err != nil {
+					errc <- errors.Wrapf(err, "failed to unmarshal configs")
+				}
+
+				authorizerService := config.Authorizer
+				apiKey := config.ApiKey
+				tenant := config.Tenant
+				includeExt := config.IncludeExt
 
 				ctx := context.Background()
 

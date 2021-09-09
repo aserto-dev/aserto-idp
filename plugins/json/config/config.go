@@ -2,6 +2,10 @@ package config
 
 import "github.com/aserto-dev/aserto-idp/pkg/proto"
 
+type JsonConfig struct {
+	File string `json:"file"`
+}
+
 func GetPluginConfig() []*proto.ConfigElement {
 	return []*proto.ConfigElement{
 		{

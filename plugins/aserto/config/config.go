@@ -2,6 +2,13 @@ package config
 
 import "github.com/aserto-dev/aserto-idp/pkg/proto"
 
+type AsertoConfig struct {
+	Authorizer string `json:"authorizer"`
+	Tenant     string `json:"tenant"`
+	ApiKey     string `json:"api_key"`
+	IncludeExt bool   `json:"include_ext"`
+}
+
 func GetPluginConfig() []*proto.ConfigElement {
 	return []*proto.ConfigElement{
 		{

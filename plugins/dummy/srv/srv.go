@@ -2,7 +2,7 @@ package srv
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/dummy/config"
@@ -15,14 +15,15 @@ func (s DummyPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*p
 	response.Build = "placeholder"
 	response.System = ""
 	response.Version = "placeholder"
-	response.Config = config.GetPluginConfig()
+	response.Description = "Dummy plugin"
+	response.Configs = config.GetPluginConfig()
 
 	return &response, nil
 }
 
 func (s DummyPluginServer) Import(srv proto.Plugin_ImportServer) error {
-	fmt.Println("not implemented")
-	return fmt.Errorf("not implemented")
+	log.Println("not implemented")
+	return nil
 }
 
 // func (s DummyPluginServer) Delete(srv proto.Plugin_DeleteServer) error {
@@ -34,6 +35,6 @@ func (s DummyPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // }
 
 func (s DummyPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
-	fmt.Println("not implemented")
+	log.Println("not implemented")
 	return nil
 }
