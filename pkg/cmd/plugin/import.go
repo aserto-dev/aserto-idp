@@ -15,38 +15,39 @@ type ImportCmd struct {
 }
 
 func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
-	configs, err := getPbStructForNode(context.Selected().Parent)
+
+	providerConfigs, err := getPbStructForNode(context.Selected().Parent)
 	if err != nil {
 		return err
 	}
 
-	users := make(chan *api.User, 10)
-	done := make(chan bool, 1)
-	errc := make(chan error, 1)
-	result := make(chan *proto.ImportResponse, 1)
+	req := &proto.ExportRequest{
+		Config: providerConfigs,
+	}
 
 	defaultProviderConfigs, err := getPbStructForNode(context.Path[0].Node())
 	if err != nil {
 		return err
 	}
 
-	//TODO: Better handle this
+	//TODO: Handle this
 	includeExt := false
 
-	exReq := &proto.ExportRequest{
-		Config: defaultProviderConfigs,
-	}
-
-	exportClient, err := c.DefaultIDPClient.Export(c.Context, exReq)
-	if err != nil {
-		return err
-	}
-
 	providerName := context.Selected().Parent.Name
-	importClient, err := c.IDPClients[providerName].Import(c.Context)
+	exportClient, err := c.IDPClients[providerName].Export(c.Context, req)
 	if err != nil {
-		return err
+		c.Log.Debug().Msg(err.Error())
 	}
+
+	importClient, err := c.DefaultIDPClient.Import(c.Context)
+	if err != nil {
+		c.Log.Debug().Msg(err.Error())
+	}
+
+	users := make(chan *api.User, 10)
+	done := make(chan bool, 1)
+	errc := make(chan error, 1)
+	result := make(chan *proto.ImportResponse, 1)
 
 	go func() {
 		for e := range errc {
@@ -61,8 +62,9 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 				user.Attributes = &api.AttrSet{}
 				user.Applications = make(map[string]*api.AttrSet)
 			}
+
 			req := &proto.ImportRequest{
-				Config: configs,
+				Config: defaultProviderConfigs,
 				Data: &proto.ImportRequest_User{
 					User: user,
 				},
