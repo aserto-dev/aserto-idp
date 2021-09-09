@@ -3,7 +3,6 @@ package srv
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 
@@ -137,6 +136,76 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // }
 
 func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
-	fmt.Println("exporting aserto")
+	errc := make(chan error, 1)
+
+	go func() {
+		for e := range errc {
+			log.Println(e.Error())
+		}
+	}()
+
+	pageSize := int32(100)
+	token := ""
+
+	configBytes, err := protojson.Marshal(req.Config)
+	if err != nil {
+		return errors.Wrapf(err, "failed to marshal config message")
+	}
+
+	config := &config.AsertoConfig{}
+	err = json.Unmarshal(configBytes, config)
+	if err != nil {
+		return errors.Wrapf(err, "failed to unmarshal configs")
+	}
+
+	authorizerService := config.Authorizer
+	apiKey := config.ApiKey
+	tenant := config.Tenant
+	includeExt := config.IncludeExt
+
+	ctx := context.Background()
+
+	conn, err := authorizer.Connection(
+		ctx,
+		authorizerService,
+		grpcc.NewAPIKeyAuth(apiKey),
+	)
+	if err != nil {
+		return errors.Wrapf(err, "authorizer.Connection")
+	}
+
+	ctx = grpcc.SetTenantContext(ctx, tenant)
+	dirClient := conn.DirectoryClient()
+
+	for {
+		resp, err := dirClient.ListUsers(ctx, &dir.ListUsersRequest{
+			Page: &api.PaginationRequest{
+				Size:  pageSize,
+				Token: token,
+			},
+			Base: !includeExt,
+		})
+
+		if err != nil {
+			return errors.Wrapf(err, "list users")
+		}
+		for _, u := range resp.Results {
+			res := &proto.ExportResponse{
+				Data: &proto.ExportResponse_User{
+					User: u,
+				},
+			}
+			if err = srv.Send(res); err != nil {
+				errc <- err
+			}
+		}
+
+		if resp.Page.NextToken == "" {
+			break
+		}
+
+		token = resp.Page.NextToken
+	}
+
 	return nil
 }
