@@ -9,7 +9,6 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ExportCmd struct {
@@ -17,26 +16,30 @@ type ExportCmd struct {
 
 func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
 
-	configs, err := buildStructPb(context)
+	providerConfigs, err := getPbStructForNode(context.Selected().Parent)
 	if err != nil {
 		return err
 	}
 
 	req := &proto.ExportRequest{
-		Config: configs,
+		Config: providerConfigs,
 	}
 
-	authorizerService := "authorizer.eng.aserto.com:8443"
-	apiKey := "XXXX"
-	tenant := "XXXX"
+	defaultProviderConfigs, err := getPbStructForNode(context.Path[0].Node())
+	if err != nil {
+		return err
+	}
+
+	//TODO: Handle this
 	includeExt := false
 
-	exportClient, err := c.CommandIDP.Export(c.Context, req)
+	providerName := context.Selected().Parent.Name
+	exportClient, err := c.IDPClients[providerName].Export(c.Context, req)
 	if err != nil {
 		c.Log.Debug().Msg(err.Error())
 	}
 
-	importClient, err := c.DefaultIDP.Import(c.Context)
+	importClient, err := c.DefaultIDPClient.Import(c.Context)
 	if err != nil {
 		c.Log.Debug().Msg(err.Error())
 	}
@@ -60,20 +63,8 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 				user.Applications = make(map[string]*api.AttrSet)
 			}
 
-			configs := map[string]interface{}{
-				"authorizer":  authorizerService,
-				"api_key":     apiKey,
-				"tenant":      tenant,
-				"include_ext": false,
-			}
-
-			configStruct, err := structpb.NewStruct(configs)
-			if err != nil {
-				errc <- errors.Wrapf(err, "could not create config struct")
-			}
-
 			req := &proto.ImportRequest{
-				Config: configStruct,
+				Config: defaultProviderConfigs,
 				Data: &proto.ImportRequest_User{
 					User: user,
 				},

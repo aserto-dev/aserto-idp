@@ -14,16 +14,15 @@ import (
 // CC contains dependencies that are cross cutting and are needed in most
 // of the providers that make up this application
 type CC struct {
-	Context    context.Context
-	Log        *zerolog.Logger
-	DefaultIDP grpcplugin.PluginClient
-	CommandIDP grpcplugin.PluginClient
+	Context          context.Context
+	Log              *zerolog.Logger
+	DefaultIDPClient grpcplugin.PluginClient
+	IDPClients       map[string]grpcplugin.PluginClient
 	// services    *grpcc.Services
 	// overrides   map[string]string
 	// environment string
 	// Provider    string
 	// APIKey      string
-	Command string
 }
 
 // func (ctx *CC) SetEnv(env string) error {
@@ -72,8 +71,9 @@ func New() *CC {
 	log, _ := logger.NewLogger(os.Stdout, &cfg)
 
 	ctx := CC{
-		Context: context.Background(),
-		Log:     log,
+		Context:    context.Background(),
+		Log:        log,
+		IDPClients: make(map[string]grpcplugin.PluginClient),
 		// overrides: make(map[string]string),
 	}
 	return &ctx
