@@ -107,18 +107,27 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	res.SuccededCount = count
 	res.FailCount = 0
 
-	_, _ = users.Write([]byte("\n]\n"))
-	f, _ := os.Create(config.File)
-	w := bufio.NewWriter(f)
-	users.WriteTo(w)
-	w.Flush()
-	err := srv.SendAndClose(res)
+	_, err := users.Write([]byte("\n]\n"))
 	if err != nil {
 		errc <- err
 	}
+	f, err := os.Create(config.File)
+	if err != nil {
+		errc <- err
+	}
+	w := bufio.NewWriter(f)
+	_, err = users.WriteTo(w)
+	if err != nil {
+		errc <- err
+	}
+	w.Flush()
 
-	// close error channel as the last action before returning
 	close(errc)
+
+	err = srv.SendAndClose(res)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
