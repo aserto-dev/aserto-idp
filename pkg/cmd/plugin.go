@@ -22,7 +22,6 @@ type Plugin struct {
 }
 
 func (cmd *Plugin) Run(c *cc.CC) error {
-	fmt.Println("llll " + cmd.Name + " llll")
 	return nil
 }
 
@@ -92,24 +91,26 @@ func LoadPlugins(finder ...finder.Finder) ([]kong.Option, error) {
 
 			pluginsMap[pluginName] = pluginPath
 
-			configs, err := idpProvider.Configs()
+			idpPluginInfo, err := idpProvider.Info()
 			if err != nil {
 				return nil, err
 			}
 
+			idpClientConfigs := idpPluginInfo.Configs
+
 			plugin := Plugin{}
-			for _, config := range configs {
-				plugin.Plugins = append(plugin.Plugins, getInterface(config.Name, config.Type))
+			for _, config := range idpClientConfigs {
+				plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Type))
 			}
 
-			dynamicCommand := kong.DynamicCommand(idpProvider.GetName(), "TODO:This needs to change", "Plugins", &plugin)
+			dynamicCommand := kong.DynamicCommand(idpProvider.GetName(), idpPluginInfo.Description, "Plugins", &plugin)
 			options = append(options, dynamicCommand)
 		}
 	}
 	return options, nil
 }
 
-func getInterface(flagName string, flagType proto.ConfigElementType) interface{} {
+func getFlagStruct(flagName string, flagType proto.ConfigElementType) interface{} {
 	flag := PluginFlag{}
 
 	flagStructType := reflect.TypeOf(flag)

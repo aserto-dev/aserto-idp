@@ -9,25 +9,26 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ExportCmd struct {
-	InclUserExt bool
-	Source      string
-	kong.Plugins
 }
 
-func (cmd *ExportCmd) Run(c *cc.CC) error {
+func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
+
+	configs, err := buildStructPb(context)
+	if err != nil {
+		return err
+	}
 
 	req := &proto.ExportRequest{
-		Options: map[string]string{
-			"source": cmd.Source,
-		},
+		Config: configs,
 	}
 
 	authorizerService := "authorizer.eng.aserto.com:8443"
-	apiKey := "xxx"
-	tenant := "zzz"
+	apiKey := "XXXX"
+	tenant := "XXXX"
 	includeExt := false
 
 	exportClient, err := c.CommandIDP.Export(c.Context, req)
@@ -58,13 +59,21 @@ func (cmd *ExportCmd) Run(c *cc.CC) error {
 				user.Attributes = &api.AttrSet{}
 				user.Applications = make(map[string]*api.AttrSet)
 			}
+
+			configs := map[string]interface{}{
+				"authorizer":  authorizerService,
+				"api_key":     apiKey,
+				"tenant":      tenant,
+				"include_ext": false,
+			}
+
+			configStruct, err := structpb.NewStruct(configs)
+			if err != nil {
+				errc <- errors.Wrapf(err, "could not create config struct")
+			}
+
 			req := &proto.ImportRequest{
-				Options: map[string]string{
-					"authorizer":  authorizerService,
-					"api_key":     apiKey,
-					"tenant":      tenant,
-					"include_ext": "false",
-				},
+				Config: configStruct,
 				Data: &proto.ImportRequest_User{
 					User: user,
 				},

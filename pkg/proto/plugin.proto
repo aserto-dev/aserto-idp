@@ -13,10 +13,11 @@ message InfoRequest {
 
 message InfoResponse {
     // Use info from https://github.com/aserto-dev/proto/blob/main/public/aserto/common/info/v1/info.proto#L37 ??
-    string system = 1;
-    string version = 2;
-    string build = 3;
-    repeated ConfigElement config = 4;
+    string description = 1;
+    string system = 2;
+    string version = 3;
+    string build = 4;
+    repeated ConfigElement configs = 5;
 }
 
 
@@ -53,8 +54,7 @@ message ConfigElement {
   }
 
 message ImportRequest{
-    // needs to be struct
-    map<string,string> options=1;
+    google.protobuf.Struct config=1;
     oneof data {
         aserto.api.v1.User user = 3;
         aserto.api.v1.UserExt user_ext = 4;
@@ -67,7 +67,7 @@ message ImportResponse{
 }
 
 message ExportRequest{
-    map<string,string> options=1;
+  google.protobuf.Struct config=1;
 }
 
 message ExportResponse{

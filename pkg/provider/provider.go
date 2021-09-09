@@ -8,6 +8,6 @@ import (
 type Provider interface {
 	GetName() string
 	GetPath() string
-	Configs() ([]*proto.ConfigElement, error)
+	Info() (*proto.InfoResponse, error)
 	PluginClient() (grpcplugin.PluginClient, error)
 }

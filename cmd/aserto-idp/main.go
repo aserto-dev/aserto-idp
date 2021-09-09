@@ -38,6 +38,7 @@ func main() {
 			Indenter:            kong.SpaceIndenter,
 			NoExpandSubcommands: false,
 		}),
+		kong.Bind(c),
 		kong.Vars{"defaultEnv": x.DefaultEnv},
 	}
 	options = append(options, pluginOptions...)
