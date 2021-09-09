@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/alecthomas/kong"
@@ -10,18 +9,18 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cmd/plugin"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
-	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
-	"github.com/aserto-dev/aserto-idp/pkg/x"
 )
 
 type Plugin struct {
-	Export plugin.ExportCmd `cmd:""`
-	Import plugin.ImportCmd `cmd:""`
-	Name   string           `kong:"-"`
+	Export      plugin.ExportCmd  `cmd:""`
+	Import      plugin.ImportCmd  `cmd:""`
+	provider    provider.Provider `kong:"-"`
+	Description string            `kong:"-"`
+	Name        string            `kong:"-"`
 	kong.Plugins
 }
 
-func (cmd *Plugin) Run(c *cc.CC) error {
+func (plugin *Plugin) Run(c *cc.CC) error {
 	return nil
 }
 
@@ -31,86 +30,28 @@ type PluginFlag struct {
 	IntFlag    int    `kong:"-"`
 }
 
-func SetPluginContext(c *cc.CC, finder ...finder.Finder) error {
-	pluginsMap := make(map[string]string)
+func NewPlugin(provider provider.Provider) (*Plugin, error) {
 
-	for _, finder := range finder {
-		pluginPaths, err := finder.Find()
-		if err != nil {
-			return err
-		}
+	plugin := Plugin{}
+	plugin.provider = provider
 
-		for _, pluginPath := range pluginPaths {
-			idpProvider := provider.NewIDPPluginPlugin(pluginPath)
-			pluginName := idpProvider.GetName()
-
-			if path, ok := pluginsMap[pluginName]; ok {
-				log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", pluginName, path, pluginPath)
-				continue
-			}
-
-			pluginsMap[pluginName] = pluginPath
-
-			if pluginName == x.DefaultPluginName {
-				client, err := idpProvider.PluginClient()
-				if err != nil {
-					return err
-				}
-				c.DefaultIDP = client
-			} else if pluginName == c.Command {
-				client, err := idpProvider.PluginClient()
-				if err != nil {
-					return err
-				}
-				c.CommandIDP = client
-			}
-		}
+	providerInfo, err := provider.Info()
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	plugin.Name = provider.GetName()
+
+	for _, config := range providerInfo.Configs {
+		plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Description, plugin.Name, config.Type))
+	}
+
+	plugin.Description = providerInfo.Description
+
+	return &plugin, nil
 }
 
-func LoadPlugins(finder ...finder.Finder) ([]kong.Option, error) {
-	var options []kong.Option
-
-	pluginsMap := make(map[string]string)
-
-	for _, finder := range finder {
-		pluginPaths, err := finder.Find()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, pluginPath := range pluginPaths {
-			idpProvider := provider.NewIDPPluginPlugin(pluginPath)
-			pluginName := idpProvider.GetName()
-
-			if path, ok := pluginsMap[pluginName]; ok {
-				log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", pluginName, path, pluginPath)
-				continue
-			}
-
-			pluginsMap[pluginName] = pluginPath
-
-			idpPluginInfo, err := idpProvider.Info()
-			if err != nil {
-				return nil, err
-			}
-
-			idpClientConfigs := idpPluginInfo.Configs
-
-			plugin := Plugin{}
-			for _, config := range idpClientConfigs {
-				plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Type))
-			}
-
-			dynamicCommand := kong.DynamicCommand(idpProvider.GetName(), idpPluginInfo.Description, "Plugins", &plugin)
-			options = append(options, dynamicCommand)
-		}
-	}
-	return options, nil
-}
-
-func getFlagStruct(flagName string, flagType proto.ConfigElementType) interface{} {
+func getFlagStruct(flagName, flagDescription, groupName string, flagType proto.ConfigElementType) interface{} {
 	flag := PluginFlag{}
 
 	flagStructType := reflect.TypeOf(flag)
@@ -123,15 +64,15 @@ func getFlagStruct(flagName string, flagType proto.ConfigElementType) interface{
 		switch flagType {
 		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_BOOLEAN:
 			if field.Type == reflect.TypeOf(true) {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" group:"Plugin Flags"`, flagName))
+				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}
 		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING:
 			if field.Type == reflect.TypeOf("string") {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" group:"Plugin Flags"`, flagName))
+				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}
 		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_INTEGER:
 			if field.Type == reflect.TypeOf(0) {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" group:"Plugin Flags"`, flagName))
+				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}
 		}
 

@@ -5,14 +5,15 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func buildStructPb(context *kong.Context) (*structpb.Struct, error) {
+func getPbStructForNode(node *kong.Node) (*structpb.Struct, error) {
 	config := make(map[string]interface{})
 
-	flags := context.Selected().Parent.Flags
-	for _, flag := range flags {
-		config[flag.Name] = flag.Value.Target.Interface()
+	for _, flag := range node.Flags {
+		// CLI flags do not have groups
+		if flag.Group != nil {
+			config[flag.Name] = flag.Value.Target.Interface()
+		}
 	}
-
 	configStruct, err := structpb.NewStruct(config)
 	return configStruct, err
 }

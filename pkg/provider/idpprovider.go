@@ -18,7 +18,7 @@ type IDPProvider struct {
 	Name string
 }
 
-func NewIDPPluginPlugin(path string) Provider {
+func NewIDPProvider(path string) Provider {
 	asertoPlugin := IDPProvider{
 		Path: path,
 		Name: providerName(path),
