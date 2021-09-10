@@ -24,7 +24,13 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	pluginsMap := make(map[string]*cmd.Plugin)
+	pluginsMap := make(map[string]provider.Provider)
+
+	defer func() {
+		for _, plugin := range pluginsMap {
+			plugin.Kill()
+		}
+	}()
 
 	options := []kong.Option{
 		kong.Name(x.AppName),
@@ -51,12 +57,12 @@ func main() {
 			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), path, pluginPath)
 			continue
 		}
-		plugin, err := cmd.NewPlugin(idpProvider)
+		plugin, err := cmd.NewPlugin(idpProvider, c)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		pluginsMap[idpProvider.GetName()] = plugin
+		pluginsMap[idpProvider.GetName()] = idpProvider
 
 		if plugin.Name == x.DefaultPluginName {
 			client, err := idpProvider.PluginClient()

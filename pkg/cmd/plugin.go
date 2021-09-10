@@ -30,12 +30,17 @@ type PluginFlag struct {
 	IntFlag    int    `kong:"-"`
 }
 
-func NewPlugin(provider provider.Provider) (*Plugin, error) {
+func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 
 	plugin := Plugin{}
 	plugin.provider = provider
 
-	providerInfo, err := provider.Info()
+	pluginClient, err := provider.PluginClient()
+	if err != nil {
+		return nil, err
+	}
+
+	providerInfo, err := pluginClient.Info(c.Context, &proto.InfoRequest{})
 	if err != nil {
 		return nil, err
 	}
