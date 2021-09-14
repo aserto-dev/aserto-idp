@@ -10,9 +10,9 @@ import (
 )
 
 type CLI struct {
-	Version VersionCmd `cmd:"" help:"version information"`
-	Verbose bool       `name:"verbose" help:"verbose output"`
-	Debug   bool       `name:"debug" env:"ASERTO_DEBUG" help:"enable debug logging"`
+	Version   VersionCmd `cmd:"" help:"version information"`
+	Verbosity int        `short:"v" type:"counter" help:"Use to increase output verbosity."`
+	Debug     bool       `name:"debug" env:"ASERTO_DEBUG" help:"enable debug logging"`
 	kong.Plugins
 }
 

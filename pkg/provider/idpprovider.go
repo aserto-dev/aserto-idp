@@ -1,49 +1,49 @@
 package provider
 
 import (
-	"context"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
+	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/aserto-idp/shared"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
+	"github.com/aserto-dev/go-utils/logger"
 	"github.com/hashicorp/go-plugin"
 )
 
 type IDPProvider struct {
-	Path string
-	Name string
+	Path   string
+	Name   string
+	client *plugin.Client
 }
 
-func NewIDPProvider(path string) Provider {
-	asertoPlugin := IDPProvider{
+func NewIDPProvider(c *cc.CC, path string) Provider {
+	idpProvider := IDPProvider{
 		Path: path,
 		Name: providerName(path),
 	}
-	return &asertoPlugin
-}
 
-func (idpProvider *IDPProvider) GetName() string {
-	return idpProvider.Name
-}
+	hcpLogger := logger.NewHCLogger(c.Log)
 
-func (idpProvider *IDPProvider) GetPath() string {
-	return idpProvider.Path
-}
-
-func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) {
-	client := plugin.NewClient(&plugin.ClientConfig{
+	idpProvider.client = plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
-		Cmd:             exec.Command(idpProvider.Path),
+		Cmd:             exec.Command(path),
+		Logger:          hcpLogger,
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
 	})
 
-	rpcClient, err := client.Client()
+	return &idpProvider
+}
+
+// Gets the plugin client. Subsequent calls to this will return the same client
+func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) {
+
+	// Subsequent calls to this will return the same client.
+	rpcClient, err := idpProvider.client.Client()
 	if err != nil {
 		return nil, err
 	}
@@ -53,21 +53,23 @@ func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) 
 	if err != nil {
 		return nil, err
 	}
+
 	return raw.(grpcplugin.PluginClient), nil
 }
 
-func (idpProvider *IDPProvider) Info() (*proto.InfoResponse, error) {
-	pluginClient, err := idpProvider.PluginClient()
-	if err != nil {
-		return nil, err
-	}
+// Kills the plugin process
+func (idpProvider *IDPProvider) Kill() {
+	idpProvider.client.Kill()
+}
 
-	infoResponse, err := pluginClient.Info(context.Background(), &proto.InfoRequest{})
-	if err != nil {
-		return nil, err
-	}
+// Gets the name of the provider
+func (idpProvider *IDPProvider) GetName() string {
+	return idpProvider.Name
+}
 
-	return infoResponse, nil
+// Gets the path of the provider
+func (idpProvider *IDPProvider) GetPath() string {
+	return idpProvider.Path
 }
 
 func providerName(path string) string {
