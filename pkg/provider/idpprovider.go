@@ -5,9 +5,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/aserto-idp/shared"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
+	"github.com/aserto-dev/go-utils/logger"
 	"github.com/hashicorp/go-plugin"
 )
 
@@ -17,16 +19,19 @@ type IDPProvider struct {
 	client *plugin.Client
 }
 
-func NewIDPProvider(path string) Provider {
+func NewIDPProvider(c *cc.CC, path string) Provider {
 	idpProvider := IDPProvider{
 		Path: path,
 		Name: providerName(path),
 	}
 
+	hcpLogger := logger.NewHCLogger(c.Log)
+
 	idpProvider.client = plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
 		Cmd:             exec.Command(path),
+		Logger:          hcpLogger,
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
 	})

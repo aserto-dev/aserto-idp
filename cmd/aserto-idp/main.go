@@ -51,7 +51,7 @@ func main() {
 	}
 
 	for _, pluginPath := range pluginPaths {
-		idpProvider := provider.NewIDPProvider(pluginPath)
+		idpProvider := provider.NewIDPProvider(c, pluginPath)
 
 		if path, ok := pluginsMap[idpProvider.GetName()]; ok {
 			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), path, pluginPath)
