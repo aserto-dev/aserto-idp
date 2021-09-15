@@ -34,12 +34,22 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	includeExt := false
 
 	providerName := context.Selected().Parent.Name
-	exportClient, err := c.IDPClients[providerName].Export(c.Context, req)
+
+	providerClient, err := c.GetProvider(providerName).PluginClient()
+	if err != nil {
+		return err
+	}
+	exportClient, err := providerClient.Export(c.Context, req)
 	if err != nil {
 		c.Log.Debug().Msg(err.Error())
 	}
 
-	importClient, err := c.DefaultIDPClient.Import(c.Context)
+	defaultProviderClient, err := c.GetDefaultProvider().PluginClient()
+	if err != nil {
+		return err
+	}
+
+	importClient, err := defaultProviderClient.Import(c.Context)
 	if err != nil {
 		c.Log.Debug().Msg(err.Error())
 	}

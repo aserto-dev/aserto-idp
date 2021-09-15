@@ -2,13 +2,14 @@ package cc
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 
-	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
+	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/go-utils/logger"
 	"github.com/rs/zerolog"
 )
@@ -16,10 +17,10 @@ import (
 // CC contains dependencies that are cross cutting and are needed in most
 // of the providers that make up this application
 type CC struct {
-	Context          context.Context
-	Log              *zerolog.Logger
-	DefaultIDPClient grpcplugin.PluginClient
-	IDPClients       map[string]grpcplugin.PluginClient
+	Context         context.Context
+	Log             *zerolog.Logger
+	defaultProvider provider.Provider
+	providers       map[string]provider.Provider
 }
 
 func (ctx *CC) SetLogger(w io.Writer) {
@@ -34,11 +35,63 @@ func New() *CC {
 	log, _ := logger.NewLogger(os.Stdout, &cfg)
 
 	ctx := CC{
-		Context:    context.Background(),
-		Log:        log,
-		IDPClients: make(map[string]grpcplugin.PluginClient),
+		Context:   context.Background(),
+		Log:       log,
+		providers: make(map[string]provider.Provider),
 	}
 	return &ctx
+}
+
+// ProviderExists returns true if the provider has already been added to the context
+func (c *CC) ProviderExists(name string) bool {
+	_, ok := c.providers[name]
+	return ok
+}
+
+// AddProvider to the context
+func (c *CC) AddProvider(prov provider.Provider) error {
+	provName := prov.GetName()
+	if c.ProviderExists(provName) {
+		return fmt.Errorf("provider %s has already been added", provName)
+	}
+
+	if c.defaultProvider != nil {
+		defaultProvName := c.defaultProvider.GetName()
+		if defaultProvName == provName {
+			return fmt.Errorf("cannot add %s because it was set as the default provider", provName)
+		}
+	}
+
+	c.providers[prov.GetName()] = prov
+	return nil
+}
+
+// SetDefaultProvider
+func (c *CC) SetDefaultProvider(prov provider.Provider) error {
+	provName := prov.GetName()
+	if c.ProviderExists(provName) {
+		return fmt.Errorf("cannot set %s as the Default Provider. Provider was already added", provName)
+	}
+	c.defaultProvider = prov
+	return nil
+}
+
+// GetDefaultProvider
+func (c *CC) GetDefaultProvider() provider.Provider {
+	return c.defaultProvider
+}
+
+// GetProvider with the given name
+func (c *CC) GetProvider(name string) provider.Provider {
+	return c.providers[name]
+}
+
+// Dispose all the resources. This can be called any number of times
+func (c *CC) Dispose() {
+	for _, provider := range c.providers {
+		provider.Kill()
+	}
+	c.defaultProvider.Kill()
 }
 
 func getLogLevel() zerolog.Level {
