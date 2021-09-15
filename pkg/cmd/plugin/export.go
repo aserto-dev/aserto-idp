@@ -37,13 +37,24 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		Config: defaultProviderConfigs,
 	}
 
-	exportClient, err := c.DefaultIDPClient.Export(c.Context, exReq)
+	defaultProviderClient, err := c.GetDefaultProvider().PluginClient()
+	if err != nil {
+		return err
+	}
+
+	exportClient, err := defaultProviderClient.Export(c.Context, exReq)
 	if err != nil {
 		return err
 	}
 
 	providerName := context.Selected().Parent.Name
-	importClient, err := c.IDPClients[providerName].Import(c.Context)
+
+	providerClient, err := c.GetProvider(providerName).PluginClient()
+	if err != nil {
+		return err
+	}
+
+	importClient, err := providerClient.Import(c.Context)
 	if err != nil {
 		return err
 	}

@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/aserto-idp/shared"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	"github.com/aserto-dev/go-utils/logger"
 	"github.com/hashicorp/go-plugin"
+	"github.com/rs/zerolog"
 )
 
 type IDPProvider struct {
@@ -19,19 +19,20 @@ type IDPProvider struct {
 	client *plugin.Client
 }
 
-func NewIDPProvider(c *cc.CC, path string) Provider {
+func NewIDPProvider(log *zerolog.Logger, path string) Provider {
 	idpProvider := IDPProvider{
 		Path: path,
 		Name: providerName(path),
 	}
 
-	hcpLogger := logger.NewHCLogger(c.Log)
+	hcpLogger := logger.NewHCLogger(log)
 
 	idpProvider.client = plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
 		Cmd:             exec.Command(path),
 		Logger:          hcpLogger,
+		Managed:         false,
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
 	})

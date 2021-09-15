@@ -24,16 +24,16 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	pluginsMap := make(map[string]provider.Provider)
-
 	defer func() {
-		for _, plugin := range pluginsMap {
-			plugin.Kill()
-		}
+		c.Dispose()
 	}()
 
 	options := []kong.Option{
 		kong.Name(x.AppName),
+		kong.Exit(func(exitCode int) {
+			c.Dispose()
+			os.Exit(exitCode)
+		}),
 		kong.Description(x.AppDescription),
 		kong.UsageOnError(),
 
@@ -51,43 +51,40 @@ func main() {
 	}
 
 	for _, pluginPath := range pluginPaths {
-		idpProvider := provider.NewIDPProvider(c, pluginPath)
+		idpProvider := provider.NewIDPProvider(c.Log, pluginPath)
 
-		if path, ok := pluginsMap[idpProvider.GetName()]; ok {
-			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), path, pluginPath)
+		if c.ProviderExists(idpProvider.GetName()) {
+			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), idpProvider.GetPath(), pluginPath)
 			continue
 		}
+
 		plugin, err := cmd.NewPlugin(idpProvider, c)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		pluginsMap[idpProvider.GetName()] = idpProvider
-
 		if plugin.Name == x.DefaultPluginName {
-			client, err := idpProvider.PluginClient()
+			err := c.SetDefaultProvider(idpProvider)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			c.DefaultIDPClient = client
 			cli.Plugins = append(cli.Plugins, plugin.Plugins...)
 		} else {
+			err = c.AddProvider(idpProvider)
+			if err != nil {
+				log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
+				continue
+			}
 			dynamicCommand := kong.DynamicCommand(plugin.Name, plugin.Description, "Plugins", plugin)
 			options = append(options, dynamicCommand)
-			c.IDPClients[plugin.Name], err = idpProvider.PluginClient()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+
 		}
 
 	}
 
 	ctx := kong.Parse(&cli, options...)
 
-	if cli.Debug {
-		c.SetLogger(os.Stderr)
-	}
-
 	err = ctx.Run(c)
+
 	ctx.FatalIfErrorf(err)
 }
