@@ -1,6 +1,6 @@
 package config
 
-import "github.com/aserto-dev/aserto-idp/pkg/proto"
+import api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 
 type Auth0Config struct {
 	Domain       string `json:"domain"`
@@ -8,36 +8,36 @@ type Auth0Config struct {
 	ClientSecret string `json:"client_secret"`
 }
 
-func GetPluginConfig() []*proto.ConfigElement {
-	return []*proto.ConfigElement{
+func GetPluginConfig() []*api.ConfigElement {
+	return []*api.ConfigElement{
 		{
 			Id:          1,
-			Kind:        proto.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
-			Type:        proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
+			Kind:        api.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
+			Type:        api.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
 			Name:        "domain",
 			Description: "Auth0 domain",
 			Usage:       "--domain=STRING",
-			Mode:        proto.DisplayMode_DISPLAY_MODE_NORMAL,
+			Mode:        api.DisplayMode_DISPLAY_MODE_NORMAL,
 			ReadOnly:    false,
 		},
 		{
 			Id:          2,
-			Kind:        proto.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
-			Type:        proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
+			Kind:        api.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
+			Type:        api.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
 			Name:        "client_id",
 			Description: "The Client ID",
 			Usage:       "--client_id=STRING",
-			Mode:        proto.DisplayMode_DISPLAY_MODE_NORMAL,
+			Mode:        api.DisplayMode_DISPLAY_MODE_NORMAL,
 			ReadOnly:    false,
 		},
 		{
 			Id:          3,
-			Kind:        proto.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
-			Type:        proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
+			Kind:        api.ConfigElementKind_CONFIG_ELEMENT_KIND_ATTRIBUTE,
+			Type:        api.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING,
 			Name:        "client_secret",
 			Description: "The Client Secret",
 			Usage:       "--client_secret=STRING",
-			Mode:        proto.DisplayMode_DISPLAY_MODE_NORMAL,
+			Mode:        api.DisplayMode_DISPLAY_MODE_NORMAL,
 			ReadOnly:    false,
 		},
 	}

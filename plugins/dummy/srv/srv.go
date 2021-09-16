@@ -12,9 +12,9 @@ type DummyPluginServer struct{}
 
 func (s DummyPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	response.Build = "placeholder"
-	response.System = ""
-	response.Version = "placeholder"
+	// response.Build = "placeholder"
+	// response.System = ""
+	// response.Version = "placeholder"
 	response.Description = "Dummy plugin"
 	response.Configs = config.GetPluginConfig()
 

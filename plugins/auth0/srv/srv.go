@@ -17,9 +17,9 @@ type Auth0PluginServer struct{}
 
 func (s Auth0PluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	response.Build = "placeholder"
-	response.System = ""
-	response.Version = "placeholder"
+	// response.Build = "placeholder"
+	// response.System = ""
+	// response.Version = "placeholder"
 	response.Description = "Auth0 IDP Plugin"
 	response.Configs = config.GetPluginConfig()
 

@@ -21,9 +21,9 @@ type AsertoPluginServer struct{}
 
 func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	response.Build = "placeholder"
-	response.System = ""
-	response.Version = "placeholder"
+	// response.Build = "placeholder"
+	// response.System = ""
+	// response.Version = "placeholder"
 	response.Description = "Aserto IDP Plugin"
 	response.Configs = config.GetPluginConfig()
 
