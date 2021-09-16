@@ -9,8 +9,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/go-utils/logger"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
 
@@ -18,6 +20,7 @@ import (
 // of the providers that make up this application
 type CC struct {
 	Context         context.Context
+	Config          *config.Config
 	Log             *zerolog.Logger
 	defaultProvider provider.Provider
 	providers       map[string]provider.Provider
@@ -36,6 +39,7 @@ func New() *CC {
 
 	ctx := CC{
 		Context:   context.Background(),
+		Config:    &config.Config{},
 		Log:       log,
 		providers: make(map[string]provider.Provider),
 	}
@@ -92,6 +96,26 @@ func (c *CC) Dispose() {
 		provider.Kill()
 	}
 	c.defaultProvider.Kill()
+}
+
+// LoadConfig loads the plugin and logger config from a configuration file
+func (c *CC) LoadConfig(path string) error {
+	cfg, err := config.NewConfig(path, c.Log)
+	if err != nil {
+		return errors.Wrap(err, "error while loading configuration")
+	}
+	c.Log.Debug().Msgf("using config file %s", path)
+	c.Config = cfg
+
+	if cfg.Logging != nil && c.Log.GetLevel() == zerolog.ErrorLevel {
+		log, err := logger.NewLogger(os.Stdout, cfg.Logging)
+		if err != nil {
+			c.Log.Warn().Msgf("failed to load logger from config file '%s'", err.Error())
+		} else {
+			c.Log = log
+		}
+	}
+	return nil
 }
 
 func getLogLevel() zerolog.Level {

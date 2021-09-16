@@ -15,17 +15,14 @@ type ExportCmd struct {
 }
 
 func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
-	configs, err := getPbStructForNode(context.Selected().Parent)
-	if err != nil {
-		return err
-	}
 
 	users := make(chan *api.User, 10)
 	done := make(chan bool, 1)
 	errc := make(chan error, 1)
 	result := make(chan *proto.ImportResponse, 1)
 
-	defaultProviderConfigs, err := getPbStructForNode(context.Path[0].Node())
+	defaultProviderName := c.GetDefaultProvider().GetName()
+	defaultProviderConfigs, err := getPbStructForNode(c.Config.Plugins[defaultProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
@@ -48,6 +45,11 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	}
 
 	providerName := context.Selected().Parent.Name
+
+	configs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Selected().Parent)
+	if err != nil {
+		return err
+	}
 
 	providerClient, err := c.GetProvider(providerName).PluginClient()
 	if err != nil {
