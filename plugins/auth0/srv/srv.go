@@ -3,11 +3,13 @@ package srv
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/auth0/config"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -25,6 +27,61 @@ func (s Auth0PluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*p
 }
 
 func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
+	config := &config.Auth0Config{}
+	errc := make(chan error, 1)
+	done := make(chan bool, 1)
+	subDone := make(chan bool, 1)
+	go func() {
+		for e := range errc {
+			log.Println(e.Error())
+		}
+	}()
+
+	users := make(chan *api.User, 10)
+	var sub *Subscriber
+
+	go func() {
+		for {
+			req, err := srv.Recv()
+			if err == io.EOF {
+				done <- true
+				return
+			}
+			if err != nil {
+				errc <- errors.Wrapf(err, "srv.Recv()")
+			}
+
+			if config.Domain == "" {
+				configBytes, err := protojson.Marshal(req.Config)
+				if err != nil {
+					errc <- err
+				}
+
+				err = json.Unmarshal(configBytes, config)
+				if err != nil {
+					errc <- err
+				}
+				sub = NewSubscriber(config)
+				go sub.Subscriber(users, errc, subDone)
+			}
+
+			switch u := req.Data.(type) {
+			case *proto.ImportRequest_User:
+				{
+					users <- u.User
+				}
+			case *proto.ImportRequest_UserExt:
+				{
+
+				}
+			}
+		}
+	}()
+
+	<-done
+	close(users)
+	<-subDone
+	close(errc)
 	return nil
 }
 
@@ -47,7 +104,6 @@ func (s Auth0PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Exp
 	if err != nil {
 		return err
 	}
-	log.Println(config)
 	errc := make(chan error, 1)
 	go func() {
 		for e := range errc {

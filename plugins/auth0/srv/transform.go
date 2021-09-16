@@ -7,12 +7,25 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"gopkg.in/auth0.v5"
 	"gopkg.in/auth0.v5/management"
 )
 
 const (
 	provider = "auth0"
 )
+
+func TransformToAuth0(in *api.User) (*management.User, error) {
+	// TODO: add more data here
+	user := management.User{
+		ID:           auth0.String(in.Id),
+		Nickname:     auth0.String(in.DisplayName),
+		Email:        auth0.String(in.Email),
+		Picture:      auth0.String(in.Picture),
+		UserMetadata: make(map[string]interface{}),
+	}
+	return &user, nil
+}
 
 // Transform Auth0 user definition into Aserto Edge User object definition.
 func Transform(in *management.User) (*api.User, error) {
