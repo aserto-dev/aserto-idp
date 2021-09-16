@@ -10,9 +10,9 @@ import (
 )
 
 type CLI struct {
+	Config    string     `short:"c" type:"path" help:"Path to the config file. Any argument provided to the CLI will take precedence."`
 	Version   VersionCmd `cmd:"" help:"version information"`
 	Verbosity int        `short:"v" type:"counter" help:"Use to increase output verbosity."`
-	Debug     bool       `name:"debug" env:"ASERTO_DEBUG" help:"enable debug logging"`
 	kong.Plugins
 }
 
@@ -24,7 +24,7 @@ type VersionCmd struct {
 }
 
 func (cmd *VersionCmd) Run(c *cc.CC) error {
-	fmt.Fprintf(c.Log, "%s - %s (%s)\n",
+	fmt.Printf("%s - %s (%s)\n",
 		x.AppName,
 		version.GetInfo().String(),
 		x.AppVersionTag,

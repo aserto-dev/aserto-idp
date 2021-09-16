@@ -16,16 +16,8 @@ type ImportCmd struct {
 
 func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
 
-	providerConfigs, err := getPbStructForNode(context.Selected().Parent)
-	if err != nil {
-		return err
-	}
-
-	req := &proto.ExportRequest{
-		Config: providerConfigs,
-	}
-
-	defaultProviderConfigs, err := getPbStructForNode(context.Path[0].Node())
+	defaultProviderName := c.GetDefaultProvider().GetName()
+	defaultProviderConfigs, err := getPbStructForNode(c.Config.Plugins[defaultProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
@@ -34,6 +26,13 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	includeExt := false
 
 	providerName := context.Selected().Parent.Name
+	providerConfigs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Selected().Parent)
+	if err != nil {
+		return err
+	}
+	req := &proto.ExportRequest{
+		Config: providerConfigs,
+	}
 
 	providerClient, err := c.GetProvider(providerName).PluginClient()
 	if err != nil {

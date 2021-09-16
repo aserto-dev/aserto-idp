@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
@@ -83,6 +84,11 @@ func main() {
 	}
 
 	ctx := kong.Parse(&cli, options...)
+
+	err = c.LoadConfig(strings.TrimSpace(cli.Config))
+	if err != nil {
+		c.Log.Fatal().Msg(err.Error())
+	}
 
 	err = ctx.Run(c)
 
