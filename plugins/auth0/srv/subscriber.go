@@ -3,7 +3,6 @@ package srv
 import (
 	"encoding/json"
 	"log"
-	"math"
 	"sync"
 	"time"
 
@@ -96,13 +95,13 @@ func (p *Subscriber) Subscriber(s <-chan *api.User, errc chan<- error, done chan
 
 	for _, job := range jobs {
 		wg.Add(1)
-		go func() {
+		go func(j *management.Job) {
 			defer wg.Done()
-			err = mgnt.Job.ImportUsers(&job)
+			err = mgnt.Job.ImportUsers(j)
 			if err != nil {
 				errc <- err
 			}
-			jobID := auth0.StringValue(job.ID)
+			jobID := auth0.StringValue(j.ID)
 			log.Printf("waiting for import job %s to finish ...", jobID)
 			for {
 				j, err := mgnt.Job.Read(jobID)
@@ -115,7 +114,7 @@ func (p *Subscriber) Subscriber(s <-chan *api.User, errc chan<- error, done chan
 				time.Sleep(1 * time.Second)
 			}
 			log.Printf("Finished %s", jobID)
-		}()
+		}(&job)
 	}
 	wg.Wait()
 	done <- true
@@ -133,11 +132,4 @@ func structToMap(in interface{}) (map[string]interface{}, int64, error) {
 	}
 	size := int64(len(data))
 	return res, size, nil
-}
-
-func eventSize(u api.User) int64 {
-	if b, err := json.Marshal(u); err == nil {
-		return int64(len(b))
-	}
-	return math.MaxInt64
 }
