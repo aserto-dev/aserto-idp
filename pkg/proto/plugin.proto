@@ -4,6 +4,8 @@ option go_package = "github.com/aserto-dev/aserto-idp/pkg/proto;proto";
 
 package proto;
 
+import "aserto/api/v1/connection.proto";
+import "aserto/common/info/v1/info.proto";
 import "aserto/api/v1/user.proto";
 import "google/protobuf/struct.proto";
 import "google/rpc/status.proto";
@@ -11,47 +13,13 @@ import "google/rpc/status.proto";
 message InfoRequest {
 }
 
-message InfoResponse {
-    // Use info from https://github.com/aserto-dev/proto/blob/main/public/aserto/common/info/v1/info.proto#L37 ??
-    string description = 1;
-    string system = 2;
-    string version = 3;
-    string build = 4;
-    repeated ConfigElement configs = 5;
+message InfoResponse {    
+    aserto.common.info.v1.SystemInfo system = 1;
+    aserto.common.info.v1.VersionInfo version = 2;
+    aserto.common.info.v1.BuildInfo build = 3;
+    string description = 4;
+    repeated aserto.api.v1.ConfigElement configs = 5;
 }
-
-
-// Use config from: https://github.com/aserto-dev/proto/blob/main/public/aserto/api/v1/connection.proto#L71 ??
-enum ConfigElementKind {
-    CONFIG_ELEMENT_KIND_UNKNOWN     = 0; // Unknown configuration element kind
-    CONFIG_ELEMENT_KIND_ATTRIBUTE   = 1; // Normal attribute
-    CONFIG_ELEMENT_KIND_SECRET      = 2; // Secret
-    CONFIG_ELEMENT_KIND_CERTIFICATE = 3; // Certificate
-  }
-  
-  enum ConfigElementType {
-    CONFIG_ELEMENT_TYPE_UNKNOWN     = 0;
-    CONFIG_ELEMENT_TYPE_STRING      = 1;
-    CONFIG_ELEMENT_TYPE_INTEGER     = 2;
-    CONFIG_ELEMENT_TYPE_BOOLEAN     = 3;
-  }
-  
-  enum DisplayMode {
-    DISPLAY_MODE_UNKNOWN            = 0;
-    DISPLAY_MODE_NORMAL             = 1;
-    DISPLAY_MODE_MASKED             = 2;
-  }
-
-message ConfigElement {
-    int32 id = 1;
-    ConfigElementKind kind = 2;
-    ConfigElementType type = 3;
-    string name = 4;
-    string description = 5;
-    string usage = 6;
-    DisplayMode mode = 7;
-    bool read_only = 8;
-  }
 
 message ImportRequest{
     google.protobuf.Struct config=1;
