@@ -46,11 +46,9 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 		return nil, err
 	}
 
-	if providerInfo.Build != nil {
-		c.Log.Warn().Msg("xxxxxx" + providerInfo.Build.Date + "Xxxxxx")
-	}
-
 	plugin.Name = provider.GetName()
+
+	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
 
 	for _, config := range providerInfo.Configs {
 		plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Description, plugin.Name, config.Type))

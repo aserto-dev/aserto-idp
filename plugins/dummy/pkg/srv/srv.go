@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
-	"github.com/aserto-dev/aserto-idp/plugins/dummy/config"
+	"github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 )
 

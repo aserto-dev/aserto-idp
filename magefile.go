@@ -3,17 +3,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"runtime"
-	"time"
 
 	"github.com/aserto-dev/mage-loot/buf"
 	"github.com/aserto-dev/mage-loot/common"
 	"github.com/aserto-dev/mage-loot/deps"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
-	"github.com/pkg/errors"
 )
 
 func init() {
@@ -38,17 +35,12 @@ func GenerateProto() error {
 
 // Build builds all binaries in ./cmd.
 func Build() error {
-	flags, err := ldflags()
-	if err != nil {
-		return err
-	}
-
-	return common.Build(flags...)
+	return common.BuildReleaser()
 }
 
 // Cleans the bin director
 func Clean() error {
-	return os.RemoveAll("bin")
+	return os.RemoveAll("dist")
 }
 
 // BuildAll builds all binaries in ./cmd for
@@ -77,25 +69,6 @@ func Test() error {
 func All() error {
 	mg.SerialDeps(Deps, Generate, Lint, Test, Build)
 	return nil
-}
-
-func ldflags() ([]string, error) {
-	commit, err := common.Commit()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to calculate git commit")
-	}
-	version, err := common.Version()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to calculate version")
-	}
-
-	date := time.Now().UTC().Format(time.RFC3339)
-
-	ldbase := "github.com/aserto-dev/aserto-idp/shared/version"
-	ldflags := fmt.Sprintf(`-X %s.ver=%s -X %s.commit=%s -X %s.date=%s`,
-		ldbase, version, ldbase, commit, ldbase, date)
-
-	return []string{"-ldflags", ldflags}, nil
 }
 
 func Run() error {

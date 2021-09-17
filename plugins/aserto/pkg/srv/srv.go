@@ -10,7 +10,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/authorizer"
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/directory"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
-	"github.com/aserto-dev/aserto-idp/plugins/aserto/config"
+	"github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"

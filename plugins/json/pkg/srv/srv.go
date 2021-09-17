@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
-	"github.com/aserto-dev/aserto-idp/plugins/json/config"
+	"github.com/aserto-dev/aserto-idp/plugins/json/pkg/config"
 	"github.com/aserto-dev/aserto-idp/shared/pb"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"

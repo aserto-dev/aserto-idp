@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
-	"github.com/aserto-dev/aserto-idp/plugins/auth0/config"
+	"github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
