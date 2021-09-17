@@ -14,11 +14,9 @@ message InfoRequest {
 }
 
 message InfoResponse {    
-    aserto.common.info.v1.SystemInfo system = 1;
-    aserto.common.info.v1.VersionInfo version = 2;
-    aserto.common.info.v1.BuildInfo build = 3;
-    string description = 4;
-    repeated aserto.api.v1.ConfigElement configs = 5;
+    aserto.common.info.v1.BuildInfo build = 1;
+    string description = 2;
+    repeated aserto.api.v1.ConfigElement configs = 3;
 }
 
 message ImportRequest{

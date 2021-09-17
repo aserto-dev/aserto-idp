@@ -46,6 +46,10 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 		return nil, err
 	}
 
+	if providerInfo.Build != nil {
+		c.Log.Warn().Msg("xxxxxx" + providerInfo.Build.Date + "Xxxxxx")
+	}
+
 	plugin.Name = provider.GetName()
 
 	for _, config := range providerInfo.Configs {

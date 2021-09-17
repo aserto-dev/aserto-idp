@@ -11,6 +11,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/directory"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/aserto/config"
+	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
 	"github.com/pkg/errors"
@@ -21,9 +22,8 @@ type AsertoPluginServer struct{}
 
 func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	// response.Build = "placeholder"
-	// response.System = ""
-	// response.Version = "placeholder"
+	response.Build = version.GetBuildInfo(config.GetVersion)
+
 	response.Description = "Aserto IDP Plugin"
 	response.Configs = config.GetPluginConfig()
 

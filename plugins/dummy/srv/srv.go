@@ -6,15 +6,14 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/dummy/config"
+	"github.com/aserto-dev/aserto-idp/shared/version"
 )
 
 type DummyPluginServer struct{}
 
 func (s DummyPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	// response.Build = "placeholder"
-	// response.System = ""
-	// response.Version = "placeholder"
+	response.Build = version.GetBuildInfo(config.GetVersion)
 	response.Description = "Dummy plugin"
 	response.Configs = config.GetPluginConfig()
 

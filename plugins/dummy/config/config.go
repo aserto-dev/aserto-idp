@@ -2,6 +2,17 @@ package config
 
 import api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 
+// values set by linker using ldflag -X
+var (
+	ver    string // nolint:gochecknoglobals // set by linker
+	date   string // nolint:gochecknoglobals // set by linker
+	commit string // nolint:gochecknoglobals // set by linker
+)
+
+func GetVersion() (string, string, string) {
+	return ver, date, commit
+}
+
 func GetPluginConfig() []*api.ConfigElement {
 	return []*api.ConfigElement{
 		{

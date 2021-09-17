@@ -8,6 +8,7 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/auth0/config"
+	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -17,9 +18,8 @@ type Auth0PluginServer struct{}
 
 func (s Auth0PluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
-	// response.Build = "placeholder"
-	// response.System = ""
-	// response.Version = "placeholder"
+	response.Build = version.GetBuildInfo(config.GetVersion)
+
 	response.Description = "Auth0 IDP Plugin"
 	response.Configs = config.GetPluginConfig()
 
