@@ -1,0 +1,187 @@
+before:
+  hooks:
+
+builds:
+  - id: cli
+    main: ./cmd/aserto-idp
+    binary: aserto-idp
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/aserto-dev/aserto-idp/pkg/version.ver={{.Version}}
+      - -X github.com/aserto-dev/aserto-idp/pkg/version.commit={{.ShortCommit}}
+      - -X github.com/aserto-dev/aserto-idp/pkg/version.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
+  
+  - id: aserto-idp-plugin-aserto
+    main: ./plugins/aserto/cmd/aserto-idp-plugin-aserto
+    binary: aserto-idp-plugin-aserto
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config.ver={{.Version}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config.commit={{.ShortCommit}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
+
+  - id: aserto-idp-plugin-auth0
+    main: ./plugins/auth0/cmd/aserto-idp-plugin-auth0
+    binary: aserto-idp-plugin-auth0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config.ver={{.Version}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config.commit={{.ShortCommit}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
+
+  - id: aserto-idp-plugin-dummy
+    main: ./plugins/dummy/cmd/aserto-idp-plugin-dummy
+    binary: aserto-idp-plugin-dummy
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.ver={{.Version}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.commit={{.ShortCommit}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
+
+  - id: aserto-idp-plugin-json
+    main: ./plugins/json/cmd/aserto-idp-plugin-json
+    binary: aserto-idp-plugin-json
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.ver={{.Version}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.commit={{.ShortCommit}}
+      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    no_unique_dist_dir: true
+
+archives:
+  - format: zip
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      amd64: x86_64
+    files:
+      - LICENSE
+      - README.md
+    name_template: "aserto-idp{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  github:
+    owner: aserto-dev
+    name: aserto-idp
+
+  draft: false
+  prerelease: false
+  name_template: "aserto-idp {{.Tag}}"
+
+brews:
+  - name: aserto-idp
+
+    tap:
+      owner: aserto-dev
+      name: aserto-tap
+      token: "{{ .Env.ASERTO_TAP }}"
+
+    url_template: "https://github.com/aserto-dev/aserto-idp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    download_strategy: CustomGitHubPrivateRepositoryReleaseDownloadStrategy
+    custom_require: "lib/custom_download_strategy"
+
+    commit_author:
+      name: Aserto Bot
+      email: github-bot@aserto.com
+
+    homepage: "https://aserto.com/"
+
+    description: "aserto idp CLI for importing and exporting users to/from IDP providers."
+
+    license: "Apache License Version 2.0"
+
+    skip_upload: false
+
+    test: |
+      system "#{bin}/aserto-idp version"
+
+    install: |
+      bin.install "aserto-idp"

@@ -9,6 +9,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cmd/plugin"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
+	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 )
 
 type Plugin struct {
@@ -47,6 +48,8 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 
 	plugin.Name = provider.GetName()
 
+	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
+
 	for _, config := range providerInfo.Configs {
 		plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Description, plugin.Name, config.Type))
 	}
@@ -56,7 +59,7 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 	return &plugin, nil
 }
 
-func getFlagStruct(flagName, flagDescription, groupName string, flagType proto.ConfigElementType) interface{} {
+func getFlagStruct(flagName, flagDescription, groupName string, flagType api.ConfigElementType) interface{} {
 	flag := PluginFlag{}
 
 	flagStructType := reflect.TypeOf(flag)
@@ -67,15 +70,15 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType proto.C
 		field := flagStructType.Field(i)
 
 		switch flagType {
-		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_BOOLEAN:
+		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_BOOLEAN:
 			if field.Type == reflect.TypeOf(true) {
 				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}
-		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING:
+		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING:
 			if field.Type == reflect.TypeOf("string") {
 				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}
-		case proto.ConfigElementType_CONFIG_ELEMENT_TYPE_INTEGER:
+		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_INTEGER:
 			if field.Type == reflect.TypeOf(0) {
 				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
 			}

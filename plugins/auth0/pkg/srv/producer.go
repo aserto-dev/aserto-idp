@@ -1,7 +1,7 @@
 package srv
 
 import (
-	"github.com/aserto-dev/aserto-idp/plugins/auth0/config"
+	"github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"gopkg.in/auth0.v5/management"
 )

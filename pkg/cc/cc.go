@@ -95,7 +95,9 @@ func (c *CC) Dispose() {
 	for _, provider := range c.providers {
 		provider.Kill()
 	}
-	c.defaultProvider.Kill()
+	if c.defaultProvider != nil {
+		c.defaultProvider.Kill()
+	}
 }
 
 // LoadConfig loads the plugin and logger config from a configuration file

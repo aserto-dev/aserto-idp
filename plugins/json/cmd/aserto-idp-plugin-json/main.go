@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/aserto-dev/aserto-idp/plugins/json/srv"
+	"github.com/aserto-dev/aserto-idp/plugins/json/pkg/srv"
 	"github.com/aserto-dev/aserto-idp/shared"
 	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	plugin "github.com/hashicorp/go-plugin"
