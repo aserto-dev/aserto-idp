@@ -3,7 +3,6 @@ package srv
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 
@@ -122,7 +121,8 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // }
 
 func (s AsertoPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+	response := &proto.ValidateResponse{}
+	return response, nil
 }
 
 func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {

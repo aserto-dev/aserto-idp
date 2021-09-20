@@ -2,6 +2,9 @@ package plugin
 
 import (
 	"github.com/alecthomas/kong"
+	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/proto"
+	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -28,4 +31,13 @@ func getConfigsForNode(node *kong.Node) map[string]interface{} {
 		}
 	}
 	return config
+}
+
+func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct) error {
+	validateReq := &proto.ValidateRequest{
+		Config: config,
+	}
+
+	_, err := pluginClient.Validate(c.Context, validateReq)
+	return err
 }

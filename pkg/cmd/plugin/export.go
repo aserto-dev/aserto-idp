@@ -41,6 +41,11 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
+	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs)
+	if err != nil {
+		return err
+	}
+
 	exportClient, err := defaultProviderClient.Export(c.Context, exReq)
 	if err != nil {
 		return err
@@ -54,6 +59,11 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	}
 
 	providerClient, err := c.GetProvider(providerName).PluginClient()
+	if err != nil {
+		return err
+	}
+
+	err = validatePlugin(providerClient, c, configs)
 	if err != nil {
 		return err
 	}
