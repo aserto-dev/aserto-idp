@@ -22,31 +22,16 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type JsonPluginServer struct{}
 
-func parseConfig(pbStruct *structpb.Struct) (*config.JsonConfig, error) {
-	configBytes, err := protojson.Marshal(pbStruct)
-	if err != nil {
-		return nil, err
-	}
-
-	config := &config.JsonConfig{}
-	err = json.Unmarshal(configBytes, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
 func (s JsonPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
-	response := proto.InfoResponse{}
-	response.Build = version.GetBuildInfo(config.GetVersion)
-	response.Description = "Json Plugin"
-	response.Configs = config.GetPluginConfig()
+	response := proto.InfoResponse{
+		Build:       version.GetBuildInfo(config.GetVersion),
+		Description: "Json Plugin",
+		Configs:     config.GetPluginConfig(),
+	}
 
 	return &response, nil
 }
@@ -147,7 +132,7 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 func (JsonPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
 	response := &proto.ValidateResponse{}
 
-	config, err := parseConfig(req.Config)
+	config, err := config.NewConfig(req.Config)
 	if err != nil {
 		return response, status.Error(codes.InvalidArgument, "failed to parse config")
 	}
@@ -179,7 +164,7 @@ func (JsonPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest
 
 func (s JsonPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 
-	config, err := parseConfig(req.Config)
+	config, err := config.NewConfig(req.Config)
 	if err != nil {
 		return err
 	}

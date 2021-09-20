@@ -12,10 +12,11 @@ import (
 type DummyPluginServer struct{}
 
 func (s DummyPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
-	response := proto.InfoResponse{}
-	response.Build = version.GetBuildInfo(config.GetVersion)
-	response.Description = "Dummy plugin"
-	response.Configs = config.GetPluginConfig()
+	response := proto.InfoResponse{
+		Build:       version.GetBuildInfo(config.GetVersion),
+		Description: "Dummy plugin",
+		Configs:     config.GetPluginConfig(),
+	}
 
 	return &response, nil
 }
