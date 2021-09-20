@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -122,9 +123,9 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
 // }
 
-// func (*pluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+func (JsonPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 
 func (s JsonPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 

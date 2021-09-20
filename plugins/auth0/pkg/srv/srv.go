@@ -3,6 +3,7 @@ package srv
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
@@ -85,9 +86,9 @@ func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
 // }
 
-// func (*pluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+func (Auth0PluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 
 func (s Auth0PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 	configBytes, err := protojson.Marshal(req.Config)

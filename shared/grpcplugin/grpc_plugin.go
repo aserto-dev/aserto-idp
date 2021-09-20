@@ -59,9 +59,9 @@ func (s *pluginGRPCServer) Export(req *proto.ExportRequest, srv proto.Plugin_Exp
 // 	return s.Impl.Delete(srv)
 // }
 
-// func (s *pluginGRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return &s.Impl.Validate(ctx, req)
-// }
+func (s *pluginGRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	return s.server.Validate(ctx, req)
+}
 
 type pluginGRPCClient struct {
 	client proto.PluginClient
@@ -83,9 +83,9 @@ func (c *pluginGRPCClient) Export(ctx context.Context, in *proto.ExportRequest, 
 // 	return c.client.Delete(ctx, opts...)
 // }
 
-// func (c *pluginGRPCClient) Validate(ctx context.Context, in *proto.ValidateRequest, opts ...grpc.CallOption) (*proto.ValidateResponse, error) {
-// 	return &c.client.Validate(ctx, in, opts...)
-// }
+func (c *pluginGRPCClient) Validate(ctx context.Context, in *proto.ValidateRequest, opts ...grpc.CallOption) (*proto.ValidateResponse, error) {
+	return c.client.Validate(ctx, in, opts...)
+}
 
 var _ PluginServer = &pluginGRPCServer{}
 var _ PluginClient = &pluginGRPCClient{}

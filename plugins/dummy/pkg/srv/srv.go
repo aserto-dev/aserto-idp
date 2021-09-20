@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
@@ -29,9 +30,9 @@ func (s DummyPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
 // }
 
-// func (*DummyPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+func (DummyPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 
 func (s DummyPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 	log.Println("not implemented")
