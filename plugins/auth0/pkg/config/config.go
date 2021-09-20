@@ -1,6 +1,12 @@
 package config
 
-import api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+import (
+	"encoding/json"
+
+	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 // values set by linker using ldflag -X
 var (
@@ -17,6 +23,21 @@ type Auth0Config struct {
 	Domain       string `json:"domain"`
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
+}
+
+func NewConfig(pbStruct *structpb.Struct) (*Auth0Config, error) {
+	configBytes, err := protojson.Marshal(pbStruct)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &Auth0Config{}
+	err = json.Unmarshal(configBytes, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 func GetPluginConfig() []*api.ConfigElement {
