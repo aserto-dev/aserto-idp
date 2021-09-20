@@ -51,7 +51,7 @@ func (c *pluginClient) Import(ctx context.Context, opts ...grpc.CallOption) (Plu
 
 type Plugin_ImportClient interface {
 	Send(*ImportRequest) error
-	CloseAndRecv() (*ImportResponse, error)
+	Recv() (*ImportResponse, error)
 	grpc.ClientStream
 }
 
@@ -63,10 +63,7 @@ func (x *pluginImportClient) Send(m *ImportRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *pluginImportClient) CloseAndRecv() (*ImportResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
+func (x *pluginImportClient) Recv() (*ImportResponse, error) {
 	m := new(ImportResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -163,7 +160,7 @@ func _Plugin_Import_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Plugin_ImportServer interface {
-	SendAndClose(*ImportResponse) error
+	Send(*ImportResponse) error
 	Recv() (*ImportRequest, error)
 	grpc.ServerStream
 }
@@ -172,7 +169,7 @@ type pluginImportServer struct {
 	grpc.ServerStream
 }
 
-func (x *pluginImportServer) SendAndClose(m *ImportResponse) error {
+func (x *pluginImportServer) Send(m *ImportResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -221,6 +218,7 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Import",
 			Handler:       _Plugin_Import_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{

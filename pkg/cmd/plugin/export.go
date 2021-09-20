@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
-	"github.com/pkg/errors"
 )
 
 type ExportCmd struct {
@@ -17,9 +17,11 @@ type ExportCmd struct {
 func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
 
 	users := make(chan *api.User, 10)
-	done := make(chan bool, 1)
-	errc := make(chan error, 1)
-	result := make(chan *proto.ImportResponse, 1)
+	doneImport := make(chan bool, 1)
+	doneExport := make(chan bool, 1)
+	doneReadErrors := make(chan bool, 1)
+	recvSuccess := 0
+	sendSuccess := 0
 
 	defaultProviderName := c.GetDefaultProvider().GetName()
 	defaultProviderConfigs, err := getPbStructForNode(c.Config.Plugins[defaultProviderName], context.Path[0].Node())
@@ -61,34 +63,61 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	// send config
+	req := &proto.ImportRequest{
+		Data: &proto.ImportRequest_Config{
+			Config: configs,
+		},
+	}
+
+	if err = importClient.Send(req); err != nil {
+		log.Fatalf("cannot send config %v", err)
+	}
 
 	// send users
 	go func() {
-		for user := range users {
+		for {
+			user, more := <-users
+			if !more {
+				doneImport <- true
+				return
+			}
 			if !includeExt {
 				user.Attributes = &api.AttrSet{}
 				user.Applications = make(map[string]*api.AttrSet)
 			}
 			req := &proto.ImportRequest{
-				Config: configs,
 				Data: &proto.ImportRequest_User{
-					User: user,
+					User: &proto.User{
+						Data: &proto.User_User{
+							User: user,
+						},
+					},
 				},
 			}
+			c.Log.Trace().Msg(fmt.Sprintf("Sending user: %s", req))
 			if err = importClient.Send(req); err != nil {
-				errc <- errors.Wrapf(err, "stream send %s", user.Id)
+				c.Log.Error().Msg(err.Error())
+			}
+			sendSuccess++
+		}
+	}()
+
+	go func() {
+		for {
+			res, err := importClient.Recv()
+			if err != nil {
+				c.Log.Error().Msg(err.Error())
+			}
+			if err == io.EOF {
+				doneReadErrors <- true
+				return
+			}
+			if respErr := res.GetError(); respErr != nil {
+				c.Log.Error().Msg(respErr.Message)
+				continue
 			}
 		}
-		res, err := importClient.CloseAndRecv()
-		if err != nil {
-			errc <- errors.Wrapf(err, "stream.CloseAndRecv()")
-		}
-		result <- res
 	}()
 
 	// receive users
@@ -96,39 +125,38 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		for {
 			resp, err := exportClient.Recv()
 			if err == io.EOF {
-				done <- true
+				doneExport <- true
 				return
 			}
 			if err != nil {
 				log.Fatalf("cannot receive %v", err)
 			}
-			log.Printf("Resp received: %s", resp.Data)
-			switch u := resp.Data.(type) {
-			case *proto.ExportResponse_User:
-				{
-					users <- u.User
-				}
-			case *proto.ExportResponse_UserExt:
-				{
+			c.Log.Trace().Msg(fmt.Sprintf("Resp received: %s", resp.Data))
 
+			if respErr := resp.GetError(); respErr != nil {
+				c.Log.Error().Msg(respErr.Message)
+				continue
+			}
+
+			if user := resp.GetUser(); user != nil {
+				if u := user.GetUser(); u != nil {
+					users <- u
 				}
 			}
+			recvSuccess++
 		}
 	}()
 
-	// Wait for EOF
-	<-done
-
+	<-doneExport
 	close(users)
-
-	// Wait for Result from import
-	res := <-result
-
-	close(errc)
-
-	if res != nil {
-		log.Printf("Succeeded: %d\n", res.SuccededCount)
-		log.Printf("Failed: %d\n", res.FailCount)
+	<-doneImport
+	if err = importClient.CloseSend(); err != nil {
+		c.Log.Debug().Msg(err.Error())
 	}
+
+	<-doneReadErrors
+
+	c.Log.Info().Msg(fmt.Sprintf("Received: %d\n", recvSuccess))
+	c.Log.Info().Msg(fmt.Sprintf("Sent: %d\n", sendSuccess))
 	return nil
 }
