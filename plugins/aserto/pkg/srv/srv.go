@@ -11,6 +11,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/directory"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config"
+	grpcerr "github.com/aserto-dev/aserto-idp/shared/errors"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
@@ -23,7 +24,6 @@ type AsertoPluginServer struct{}
 func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
 	response := proto.InfoResponse{}
 	response.Build = version.GetBuildInfo(config.GetVersion)
-
 	response.Description = "Aserto IDP Plugin"
 	response.Configs = config.GetPluginConfig()
 
@@ -35,14 +35,11 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 
 	users := make(chan *api.User, 10)
 	done := make(chan bool, 1)
+	errDone := make(chan bool, 1)
 	errc := make(chan error, 1)
 	r := make(chan *directory.Result, 1)
 
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	go grpcerr.SendImportErrors(srv, errc, errDone)
 
 	go func() {
 		for {
@@ -52,50 +49,47 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 				return
 			}
 			if err != nil {
-				errc <- errors.Wrapf(err, "srv.Recv()")
+				log.Println(errors.Wrapf(err, "srv.Recv()"))
 			}
 			if dirClient == nil {
-				configBytes, err := protojson.Marshal(req.Config)
-				if err != nil {
-					errc <- errors.Wrapf(err, "failed to marshal config message")
+				if cfg := req.GetConfig(); cfg != nil {
+					configBytes, err := protojson.Marshal(cfg)
+					if err != nil {
+						log.Println(errors.Wrapf(err, "failed to marshal config message"))
+					}
+
+					config := &config.AsertoConfig{}
+					err = json.Unmarshal(configBytes, config)
+					if err != nil {
+						log.Println(errors.Wrapf(err, "failed to unmarshal configs"))
+					}
+
+					authorizerService := config.Authorizer
+					apiKey := config.ApiKey
+					tenant := config.Tenant
+					includeExt := config.IncludeExt
+
+					ctx := context.Background()
+
+					conn, err := authorizer.Connection(
+						ctx,
+						authorizerService,
+						grpcc.NewAPIKeyAuth(apiKey),
+					)
+					if err != nil {
+						log.Println(errors.Wrapf(err, "authorizer.Connection"))
+					}
+
+					ctx = grpcc.SetTenantContext(ctx, tenant)
+					dirClient := conn.DirectoryClient()
+
+					go directory.Subscriber(ctx, dirClient, users, r, errc, includeExt)
 				}
-
-				config := &config.AsertoConfig{}
-				err = json.Unmarshal(configBytes, config)
-				if err != nil {
-					errc <- errors.Wrapf(err, "failed to unmarshal configs")
-				}
-
-				authorizerService := config.Authorizer
-				apiKey := config.ApiKey
-				tenant := config.Tenant
-				includeExt := config.IncludeExt
-
-				ctx := context.Background()
-
-				conn, err := authorizer.Connection(
-					ctx,
-					authorizerService,
-					grpcc.NewAPIKeyAuth(apiKey),
-				)
-				if err != nil {
-					errc <- errors.Wrapf(err, "authorizer.Connection")
-				}
-
-				ctx = grpcc.SetTenantContext(ctx, tenant)
-				dirClient := conn.DirectoryClient()
-
-				go directory.Subscriber(ctx, dirClient, users, r, errc, includeExt)
 			}
 
-			switch u := req.Data.(type) {
-			case *proto.ImportRequest_User:
-				{
-					users <- u.User
-				}
-			case *proto.ImportRequest_UserExt:
-				{
-
+			if user := req.GetUser(); user != nil {
+				if u := user.GetUser(); u != nil {
+					users <- u
 				}
 			}
 		}
@@ -110,19 +104,14 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	result := <-r
 
 	// TODO: (florind) Add more details here
-	res := &proto.ImportResponse{}
 	if result.Counts != nil {
-		res.SuccededCount = result.Counts.Created
-		res.FailCount = result.Counts.Errors
-	}
-
-	err := srv.SendAndClose(res)
-	if err != nil {
-		errc <- err
+		log.Printf("Created: %d\n", result.Counts.Created)
+		log.Printf("Failed: %d\n", result.Counts.Errors)
 	}
 
 	// close error channel as the last action before returning
 	close(errc)
+	<-errDone
 
 	return result.Err
 }
@@ -137,12 +126,9 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 
 func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 	errc := make(chan error, 1)
+	errDone := make(chan bool, 1)
 
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	go grpcerr.SendExportErrors(srv, errc, errDone)
 
 	pageSize := int32(100)
 	token := ""
@@ -192,7 +178,11 @@ func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Ex
 		for _, u := range resp.Results {
 			res := &proto.ExportResponse{
 				Data: &proto.ExportResponse_User{
-					User: u,
+					User: &proto.User{
+						Data: &proto.User_User{
+							User: u,
+						},
+					},
 				},
 			}
 			if err = srv.Send(res); err != nil {
@@ -206,6 +196,9 @@ func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Ex
 
 		token = resp.Page.NextToken
 	}
+
+	close(errc)
+	<-errDone
 
 	return nil
 }

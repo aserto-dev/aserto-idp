@@ -20,16 +20,21 @@ message InfoResponse {
 }
 
 message ImportRequest{
-    google.protobuf.Struct config=1;
     oneof data {
-        aserto.api.v1.User user = 3;
-        aserto.api.v1.UserExt user_ext = 4;
+        google.protobuf.Struct config=1;
+        User user = 2;
       }
 }
 
+message User{
+  oneof data {
+    aserto.api.v1.User user = 1;
+    aserto.api.v1.UserExt user_ext = 2;
+  }
+}
+
 message ImportResponse{
-    int32 succededCount=1;
-    int32 failCount=2;
+  google.rpc.Status error = 1;
 }
 
 message ExportRequest{
@@ -38,8 +43,8 @@ message ExportRequest{
 
 message ExportResponse{
     oneof data {
-        aserto.api.v1.User user = 3;
-        aserto.api.v1.UserExt user_ext = 4;
+        User user = 2;
+        google.rpc.Status error = 3;
       }
 }
 
@@ -70,7 +75,7 @@ message ExportResponse{
 
 service Plugin {
     rpc Info(InfoRequest) returns (InfoResponse);
-    rpc Import(stream ImportRequest) returns (ImportResponse);
+    rpc Import(stream ImportRequest) returns (stream ImportResponse);
     rpc Export(ExportRequest) returns (stream ExportResponse);
     // rpc Delete(stream DeleteRequest) returns (DeleteResponse);
     // rpc Validate(ValidateRequest) returns (ValidateResponse);

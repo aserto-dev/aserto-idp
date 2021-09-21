@@ -11,6 +11,7 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/json/pkg/config"
+	grpcerr "github.com/aserto-dev/aserto-idp/shared/errors"
 	"github.com/aserto-dev/aserto-idp/shared/pb"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
@@ -31,15 +32,12 @@ func (s JsonPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*pr
 
 func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	done := make(chan bool, 1)
+	errDone := make(chan bool, 1)
 	errc := make(chan error, 1)
 	config := &config.JsonConfig{}
 	count := int32(0)
 
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	go grpcerr.SendImportErrors(srv, errc, errDone)
 
 	var users bytes.Buffer
 	users.Write([]byte("[\n"))
@@ -65,24 +63,25 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 			}
 
 			if config.File == "" {
-				configBytes, err := protojson.Marshal(req.Config)
-				if err != nil {
-					errc <- err
-				}
+				if cfg := req.GetConfig(); cfg != nil {
+					configBytes, err := protojson.Marshal(cfg)
+					if err != nil {
+						errc <- err
+					}
 
-				err = json.Unmarshal(configBytes, config)
-				if err != nil {
-					errc <- err
+					err = json.Unmarshal(configBytes, config)
+					if err != nil {
+						errc <- err
+					}
 				}
 			}
 
-			switch u := req.Data.(type) {
-			case *proto.ImportRequest_User:
-				{
+			if user := req.GetUser(); user != nil {
+				if u := user.GetUser(); u != nil {
 					if count > 0 {
 						_, _ = users.Write([]byte(",\n"))
 					}
-					b, err := options.Marshal(u.User)
+					b, err := options.Marshal(u)
 					if err != nil {
 						errc <- err
 					}
@@ -92,19 +91,11 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 					}
 					count++
 				}
-			case *proto.ImportRequest_UserExt:
-				{
-
-				}
 			}
 		}
 	}()
 	// Wait for EOF
 	<-done
-
-	res := &proto.ImportResponse{}
-	res.SuccededCount = count
-	res.FailCount = 0
 
 	_, err := users.Write([]byte("\n]\n"))
 	if err != nil {
@@ -122,11 +113,7 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	w.Flush()
 
 	close(errc)
-
-	err = srv.SendAndClose(res)
-	if err != nil {
-		return err
-	}
+	<-errDone
 
 	return nil
 }
@@ -173,7 +160,11 @@ func (s JsonPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Expo
 		}
 		res := &proto.ExportResponse{
 			Data: &proto.ExportResponse_User{
-				User: &u,
+				User: &proto.User{
+					Data: &proto.User_User{
+						User: &u,
+					},
+				},
 			},
 		}
 		if err = srv.Send(res); err != nil {

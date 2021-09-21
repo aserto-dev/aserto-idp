@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/auth0/pkg/config"
+	grpcerr "github.com/aserto-dev/aserto-idp/shared/errors"
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
@@ -31,11 +31,9 @@ func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
 	errc := make(chan error, 1)
 	done := make(chan bool, 1)
 	subDone := make(chan bool, 1)
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	errDone := make(chan bool, 1)
+
+	go grpcerr.SendImportErrors(srv, errc, errDone)
 
 	users := make(chan *api.User, 10)
 	var sub *Subscriber
@@ -52,27 +50,24 @@ func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
 			}
 
 			if config.Domain == "" {
-				configBytes, err := protojson.Marshal(req.Config)
-				if err != nil {
-					errc <- err
-				}
+				if cfg := req.GetConfig(); cfg != nil {
+					configBytes, err := protojson.Marshal(cfg)
+					if err != nil {
+						errc <- err
+					}
 
-				err = json.Unmarshal(configBytes, config)
-				if err != nil {
-					errc <- err
+					err = json.Unmarshal(configBytes, config)
+					if err != nil {
+						errc <- err
+					}
+					sub = NewSubscriber(config)
+					go sub.Subscriber(users, errc, subDone)
 				}
-				sub = NewSubscriber(config)
-				go sub.Subscriber(users, errc, subDone)
 			}
 
-			switch u := req.Data.(type) {
-			case *proto.ImportRequest_User:
-				{
-					users <- u.User
-				}
-			case *proto.ImportRequest_UserExt:
-				{
-
+			if user := req.GetUser(); user != nil {
+				if u := user.GetUser(); u != nil {
+					users <- u
 				}
 			}
 		}
@@ -82,6 +77,7 @@ func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
 	close(users)
 	<-subDone
 	close(errc)
+	<-errDone
 	return nil
 }
 
@@ -105,11 +101,9 @@ func (s Auth0PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Exp
 		return err
 	}
 	errc := make(chan error, 1)
-	go func() {
-		for e := range errc {
-			log.Println(e.Error())
-		}
-	}()
+	errDone := make(chan bool, 1)
+
+	go grpcerr.SendExportErrors(srv, errc, errDone)
 
 	users := make(chan *api.User, 10)
 	done := make(chan bool, 1)
@@ -118,7 +112,11 @@ func (s Auth0PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Exp
 		for u := range users {
 			res := &proto.ExportResponse{
 				Data: &proto.ExportResponse_User{
-					User: u,
+					User: &proto.User{
+						Data: &proto.User_User{
+							User: u,
+						},
+					},
 				},
 			}
 			if err = srv.Send(res); err != nil {
@@ -136,6 +134,7 @@ func (s Auth0PluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Exp
 	<-done
 
 	close(errc)
+	<-errDone
 
 	return nil
 }
