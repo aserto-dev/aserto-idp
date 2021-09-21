@@ -2,7 +2,6 @@ package srv
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 
@@ -16,16 +15,18 @@ import (
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type AsertoPluginServer struct{}
 
 func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
-	response := proto.InfoResponse{}
-	response.Build = version.GetBuildInfo(config.GetVersion)
-	response.Description = "Aserto IDP Plugin"
-	response.Configs = config.GetPluginConfig()
+	response := proto.InfoResponse{
+		Build:       version.GetBuildInfo(config.GetVersion),
+		Description: "Aserto IDP Plugin",
+		Configs:     config.GetPluginConfig(),
+	}
 
 	return &response, nil
 }
@@ -52,39 +53,31 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 				log.Println(errors.Wrapf(err, "srv.Recv()"))
 			}
 			if dirClient == nil {
-				if cfg := req.GetConfig(); cfg != nil {
-					configBytes, err := protojson.Marshal(cfg)
-					if err != nil {
-						log.Println(errors.Wrapf(err, "failed to marshal config message"))
-					}
-
-					config := &config.AsertoConfig{}
-					err = json.Unmarshal(configBytes, config)
-					if err != nil {
-						log.Println(errors.Wrapf(err, "failed to unmarshal configs"))
-					}
-
-					authorizerService := config.Authorizer
-					apiKey := config.ApiKey
-					tenant := config.Tenant
-					includeExt := config.IncludeExt
-
-					ctx := context.Background()
-
-					conn, err := authorizer.Connection(
-						ctx,
-						authorizerService,
-						grpcc.NewAPIKeyAuth(apiKey),
-					)
-					if err != nil {
-						log.Println(errors.Wrapf(err, "authorizer.Connection"))
-					}
-
-					ctx = grpcc.SetTenantContext(ctx, tenant)
-					dirClient := conn.DirectoryClient()
-
-					go directory.Subscriber(ctx, dirClient, users, r, errc, includeExt)
+				reqConfig := req.GetConfig()
+				if reqConfig == nil {
+					errc <- status.Error(codes.FailedPrecondition, "Directory service is not initialized")
+					continue
 				}
+				cfg, err := config.NewConfig(reqConfig)
+				if err != nil {
+					errc <- errors.Wrapf(err, "failed to unmarshal configs")
+				}
+
+				ctx := context.Background()
+
+				conn, err := authorizer.Connection(
+					ctx,
+					cfg.Authorizer,
+					grpcc.NewAPIKeyAuth(cfg.ApiKey),
+				)
+				if err != nil {
+					log.Fatalf("Failed to create authorizer connection: %s", err)
+				}
+
+				ctx = grpcc.SetTenantContext(ctx, cfg.Tenant)
+				dirClient := conn.DirectoryClient()
+
+				go directory.Subscriber(ctx, dirClient, users, r, errc, cfg.IncludeExt)
 			}
 
 			if user := req.GetUser(); user != nil {
@@ -120,9 +113,40 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
 // }
 
-// func (*pluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+// Validate that one use can be retrieved
+func (s AsertoPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	response := &proto.ValidateResponse{}
+
+	cfg, err := config.NewConfig(req.Config)
+	if err != nil {
+		return response, status.Error(codes.InvalidArgument, "failed to parse config")
+	}
+
+	conn, err := authorizer.Connection(
+		ctx,
+		cfg.Authorizer,
+		grpcc.NewAPIKeyAuth(cfg.ApiKey),
+	)
+	if err != nil {
+		return response, status.Errorf(codes.Internal, "failed to create authorizar connection %s", err.Error())
+	}
+
+	ctx = grpcc.SetTenantContext(ctx, cfg.Tenant)
+	dirClient := conn.DirectoryClient()
+
+	_, err = dirClient.ListUsers(ctx, &dir.ListUsersRequest{
+		Page: &api.PaginationRequest{
+			Size:  1,
+			Token: "",
+		},
+		Base: !cfg.IncludeExt,
+	})
+
+	if err != nil {
+		return response, status.Errorf(codes.Internal, "failed to get one user: %s", err.Error())
+	}
+	return response, nil
+}
 
 func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 	errc := make(chan error, 1)
@@ -133,34 +157,23 @@ func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Ex
 	pageSize := int32(100)
 	token := ""
 
-	configBytes, err := protojson.Marshal(req.Config)
+	cfg, err := config.NewConfig(req.Config)
 	if err != nil {
-		return errors.Wrapf(err, "failed to marshal config message")
+		return nil
 	}
-
-	config := &config.AsertoConfig{}
-	err = json.Unmarshal(configBytes, config)
-	if err != nil {
-		return errors.Wrapf(err, "failed to unmarshal configs")
-	}
-
-	authorizerService := config.Authorizer
-	apiKey := config.ApiKey
-	tenant := config.Tenant
-	includeExt := config.IncludeExt
 
 	ctx := context.Background()
 
 	conn, err := authorizer.Connection(
 		ctx,
-		authorizerService,
-		grpcc.NewAPIKeyAuth(apiKey),
+		cfg.Authorizer,
+		grpcc.NewAPIKeyAuth(cfg.ApiKey),
 	)
 	if err != nil {
 		return errors.Wrapf(err, "authorizer.Connection")
 	}
 
-	ctx = grpcc.SetTenantContext(ctx, tenant)
+	ctx = grpcc.SetTenantContext(ctx, cfg.Tenant)
 	dirClient := conn.DirectoryClient()
 
 	for {
@@ -169,7 +182,7 @@ func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Ex
 				Size:  pageSize,
 				Token: token,
 			},
-			Base: !includeExt,
+			Base: !cfg.IncludeExt,
 		})
 
 		if err != nil {

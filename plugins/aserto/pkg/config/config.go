@@ -1,6 +1,12 @@
 package config
 
-import api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+import (
+	"encoding/json"
+
+	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 // values set by linker using ldflag -X
 var (
@@ -18,6 +24,21 @@ type AsertoConfig struct {
 	Tenant     string `json:"tenant"`
 	ApiKey     string `json:"api_key"`
 	IncludeExt bool   `json:"include_ext"`
+}
+
+func NewConfig(pbStruct *structpb.Struct) (*AsertoConfig, error) {
+	configBytes, err := protojson.Marshal(pbStruct)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &AsertoConfig{}
+	err = json.Unmarshal(configBytes, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 func GetPluginConfig() []*api.ConfigElement {

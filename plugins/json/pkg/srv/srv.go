@@ -8,6 +8,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/json/pkg/config"
@@ -16,16 +18,20 @@ import (
 	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	"github.com/pkg/errors"
+	"golang.org/x/sys/unix"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type JsonPluginServer struct{}
 
 func (s JsonPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*proto.InfoResponse, error) {
-	response := proto.InfoResponse{}
-	response.Build = version.GetBuildInfo(config.GetVersion)
-	response.Description = "Json Plugin"
-	response.Configs = config.GetPluginConfig()
+	response := proto.InfoResponse{
+		Build:       version.GetBuildInfo(config.GetVersion),
+		Description: "Json Plugin",
+		Configs:     config.GetPluginConfig(),
+	}
 
 	return &response, nil
 }
@@ -122,19 +128,43 @@ func (s JsonPluginServer) Import(srv proto.Plugin_ImportServer) error {
 // 	return fmt.Errorf("not implemented")
 // }
 
-// func (*pluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-// 	return nil, fmt.Errorf("not implemented")
-// }
+// Validate that the folder of the given file is writable
+func (JsonPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+	response := &proto.ValidateResponse{}
+
+	config, err := config.NewConfig(req.Config)
+	if err != nil {
+		return response, status.Error(codes.InvalidArgument, "failed to parse config")
+	}
+
+	dir := filepath.Dir(config.File)
+
+	info, err := os.Stat(dir)
+	if err != nil {
+		return response, status.Error(codes.NotFound, err.Error())
+	}
+
+	if !info.IsDir() {
+		return response, status.Errorf(codes.InvalidArgument, "%s is not a directory", dir)
+	}
+
+	if runtime.GOOS == "windows" {
+		if info.Mode().Perm()&(1<<(uint(7))) == 0 {
+			return response, status.Errorf(codes.PermissionDenied, "cannot access %s", dir)
+		}
+	} else {
+		err = unix.Access(dir, unix.W_OK)
+		if err != nil {
+			return response, status.Errorf(codes.PermissionDenied, "cannot access %s: %s", dir, err.Error())
+		}
+	}
+
+	return response, nil
+}
 
 func (s JsonPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_ExportServer) error {
 
-	configBytes, err := protojson.Marshal(req.Config)
-	if err != nil {
-		return err
-	}
-
-	config := &config.JsonConfig{}
-	err = json.Unmarshal(configBytes, config)
+	config, err := config.NewConfig(req.Config)
 	if err != nil {
 		return err
 	}

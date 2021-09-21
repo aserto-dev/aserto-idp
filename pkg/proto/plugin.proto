@@ -62,21 +62,18 @@ message ExportResponse{
 //      repeated google.rpc.Status status = 3;
 // }
 
-// message ValidateRequest{
-//     map<string,string> options=1;
-// }
+message ValidateRequest{
+    google.protobuf.Struct config=1;
+}
 
-// message ValidateResponse{
-//     google.rpc.Status status = 1;
-// }
-
-
-
+message ValidateResponse{
+    google.rpc.Status status = 1;
+}
 
 service Plugin {
     rpc Info(InfoRequest) returns (InfoResponse);
     rpc Import(stream ImportRequest) returns (stream ImportResponse);
     rpc Export(ExportRequest) returns (stream ExportResponse);
     // rpc Delete(stream DeleteRequest) returns (DeleteResponse);
-    // rpc Validate(ValidateRequest) returns (ValidateResponse);
+    rpc Validate(ValidateRequest) returns (ValidateResponse);
 }

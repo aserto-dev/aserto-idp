@@ -21,6 +21,8 @@ type PluginClient interface {
 	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
 	Import(ctx context.Context, opts ...grpc.CallOption) (Plugin_ImportClient, error)
 	Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error)
+	// rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
 }
 
 type pluginClient struct {
@@ -103,6 +105,15 @@ func (x *pluginExportClient) Recv() (*ExportResponse, error) {
 	return m, nil
 }
 
+func (c *pluginClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error) {
+	out := new(ValidateResponse)
+	err := c.cc.Invoke(ctx, "/proto.Plugin/Validate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations should embed UnimplementedPluginServer
 // for forward compatibility
@@ -110,6 +121,8 @@ type PluginServer interface {
 	Info(context.Context, *InfoRequest) (*InfoResponse, error)
 	Import(Plugin_ImportServer) error
 	Export(*ExportRequest, Plugin_ExportServer) error
+	// rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 }
 
 // UnimplementedPluginServer should be embedded to have forward compatible implementations.
@@ -124,6 +137,9 @@ func (UnimplementedPluginServer) Import(Plugin_ImportServer) error {
 }
 func (UnimplementedPluginServer) Export(*ExportRequest, Plugin_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
+}
+func (UnimplementedPluginServer) Validate(context.Context, *ValidateRequest) (*ValidateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
 }
 
 // UnsafePluginServer may be embedded to opt out of forward compatibility for this service.
@@ -202,6 +218,24 @@ func (x *pluginExportServer) Send(m *ExportResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Plugin_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).Validate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Plugin/Validate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).Validate(ctx, req.(*ValidateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -212,6 +246,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Info",
 			Handler:    _Plugin_Info_Handler,
+		},
+		{
+			MethodName: "Validate",
+			Handler:    _Plugin_Validate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
