@@ -53,14 +53,14 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 				log.Println(errors.Wrapf(err, "srv.Recv()"))
 			}
 			if dirClient == nil {
-			    reqConfig := req.GetConfig()
-			    if reqConfig == nil {
-			        errc <-status.Error(codes.FailedPrecondition, "Directory service is not initialized")
-			        continue
-			    }
+				reqConfig := req.GetConfig()
+				if reqConfig == nil {
+					errc <- status.Error(codes.FailedPrecondition, "Directory service is not initialized")
+					continue
+				}
 				cfg, err := config.NewConfig(reqConfig)
 				if err != nil {
-				    errc <- errors.Wrapf(err, "failed to unmarshal configs")
+					errc <- errors.Wrapf(err, "failed to unmarshal configs")
 				}
 
 				ctx := context.Background()
@@ -71,7 +71,7 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 					grpcc.NewAPIKeyAuth(cfg.ApiKey),
 				)
 				if err != nil {
-					log.Fatalf(errors.Wrapf(err, "authorizer.Connection"))
+					log.Fatalf("Failed to create authorizer connection: %s", err)
 				}
 
 				ctx = grpcc.SetTenantContext(ctx, cfg.Tenant)
