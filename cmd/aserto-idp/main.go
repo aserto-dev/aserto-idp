@@ -92,5 +92,7 @@ func main() {
 
 	err = ctx.Run(c)
 
-	ctx.FatalIfErrorf(err)
+	if err != nil {
+		c.Ui.Problem().Msg(err.Error())
+	}
 }
