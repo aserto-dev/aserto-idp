@@ -128,7 +128,7 @@ func (c *CC) LoadConfig(path string) error {
 }
 
 func getLogLevel() zerolog.Level {
-	logLevel := zerolog.ErrorLevel
+	logLevel := zerolog.FatalLevel
 
 	for _, arg := range os.Args {
 		if strings.HasPrefix(strings.ToLower(arg), "--verbosity=") {
@@ -138,20 +138,24 @@ func getLogLevel() zerolog.Level {
 			}
 			switch intLevel {
 			case 1:
-				logLevel = zerolog.InfoLevel
+				logLevel = zerolog.ErrorLevel
 			case 2:
-				logLevel = zerolog.DebugLevel
+				logLevel = zerolog.InfoLevel
 			case 3:
+				logLevel = zerolog.DebugLevel
+			case 4:
 				logLevel = zerolog.TraceLevel
 			}
 
 		}
 		switch arg {
 		case "-v":
-			logLevel = zerolog.InfoLevel
+			logLevel = zerolog.ErrorLevel
 		case "-vv":
-			logLevel = zerolog.DebugLevel
+			logLevel = zerolog.InfoLevel
 		case "-vvv":
+			logLevel = zerolog.DebugLevel
+		case "-vvvv":
 			logLevel = zerolog.TraceLevel
 		}
 
