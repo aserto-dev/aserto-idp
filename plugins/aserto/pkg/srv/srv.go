@@ -32,7 +32,7 @@ func (s AsertoPluginServer) Info(ctx context.Context, req *proto.InfoRequest) (*
 }
 
 func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
-	var dirClient *dir.DirectoryClient
+	var dirClient dir.DirectoryClient
 
 	users := make(chan *api.User, 10)
 	done := make(chan bool, 1)
@@ -75,7 +75,7 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 				}
 
 				ctx = grpcc.SetTenantContext(ctx, cfg.Tenant)
-				dirClient := conn.DirectoryClient()
+				dirClient = conn.DirectoryClient()
 
 				go directory.Subscriber(ctx, dirClient, users, r, errc, cfg.IncludeExt)
 			}

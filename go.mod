@@ -6,6 +6,7 @@ go 1.16
 
 require (
 	github.com/alecthomas/kong v0.2.17
+	github.com/aserto-dev/clui v0.1.2
 	github.com/aserto-dev/go-grpc v0.0.3
 	github.com/aserto-dev/go-grpc-authz v0.0.2
 	github.com/aserto-dev/go-utils v0.0.4
@@ -18,7 +19,7 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
+	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210811021853-ddbe55d93216
 	google.golang.org/grpc v1.40.0

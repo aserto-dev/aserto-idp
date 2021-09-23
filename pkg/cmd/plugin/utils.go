@@ -33,11 +33,16 @@ func getConfigsForNode(node *kong.Node) map[string]interface{} {
 	return config
 }
 
-func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct) error {
+func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string) error {
+	c.Ui.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
 	validateReq := &proto.ValidateRequest{
 		Config: config,
 	}
 
 	_, err := pluginClient.Validate(c.Context, validateReq)
+
+	if err == nil {
+		c.Ui.Success().Msg("Connection validated.")
+	}
 	return err
 }

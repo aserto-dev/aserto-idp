@@ -9,6 +9,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"github.com/pkg/errors"
 )
 
 type ExportCmd struct {
@@ -22,6 +23,7 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	doneReadErrors := make(chan bool, 1)
 	recvSuccess := 0
 	sendSuccess := 0
+	errorCount := 0
 
 	defaultProviderName := c.GetDefaultProvider().GetName()
 	defaultProviderConfigs, err := getPbStructForNode(c.Config.Plugins[defaultProviderName], context.Path[0].Node())
@@ -41,7 +43,7 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
-	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs)
+	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs, defaultProviderName)
 	if err != nil {
 		return err
 	}
@@ -63,7 +65,7 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
-	err = validatePlugin(providerClient, c, configs)
+	err = validatePlugin(providerClient, c, configs, providerName)
 	if err != nil {
 		return err
 	}
@@ -81,9 +83,12 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	}
 
 	if err = importClient.Send(req); err != nil {
-		log.Fatalf("cannot send config %v", err)
+		return errors.Wrap(err, "cannot sent config")
 	}
 
+	exportProgress := c.Ui.Progress("Exporting users")
+
+	exportProgress.Start()
 	// send users
 	go func() {
 		for {
@@ -116,16 +121,19 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	go func() {
 		for {
 			res, err := importClient.Recv()
-			if err != nil {
-				c.Log.Error().Msg(err.Error())
-			}
 			if err == io.EOF {
 				doneReadErrors <- true
 				return
 			}
+			errorCount++
+
+			if err != nil {
+				c.Log.Error().Msg(err.Error())
+				continue
+			}
+
 			if respErr := res.GetError(); respErr != nil {
 				c.Log.Error().Msg(respErr.Message)
-				continue
 			}
 		}
 	}()
@@ -165,8 +173,13 @@ func (cmd *ExportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	}
 
 	<-doneReadErrors
+	exportProgress.Stop()
 
-	c.Log.Info().Msg(fmt.Sprintf("Received: %d\n", recvSuccess))
-	c.Log.Info().Msg(fmt.Sprintf("Sent: %d\n", sendSuccess))
+	c.Ui.Normal().WithTable("Status", "N° of users").
+		WithTableRow("Users sent", fmt.Sprintf("%d", sendSuccess)).
+		WithTableRow("Users received", fmt.Sprintf("%d", recvSuccess)).
+		WithTableRow("Errors", fmt.Sprintf("%d", errorCount)).Do()
+
+	c.Ui.Success().Msg("Export done")
 	return nil
 }

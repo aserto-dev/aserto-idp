@@ -11,6 +11,7 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
+	"github.com/aserto-dev/clui"
 	"github.com/aserto-dev/go-utils/logger"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -22,6 +23,7 @@ type CC struct {
 	Context         context.Context
 	Config          *config.Config
 	Log             *zerolog.Logger
+	Ui              *clui.UI
 	defaultProvider provider.Provider
 	providers       map[string]provider.Provider
 }
@@ -31,16 +33,21 @@ func (ctx *CC) SetLogger(w io.Writer) {
 }
 
 func New() *CC {
+	writter := os.Stdout
+
 	cfg := logger.Config{}
 
 	cfg.LogLevelParsed = getLogLevel()
 
-	log, _ := logger.NewLogger(os.Stdout, &cfg)
+	log, _ := logger.NewLogger(writter, &cfg)
+
+	ui := clui.NewUIWithOutput(writter)
 
 	ctx := CC{
 		Context:   context.Background(),
 		Config:    &config.Config{},
 		Log:       log,
+		Ui:        ui,
 		providers: make(map[string]provider.Provider),
 	}
 	return &ctx
@@ -121,7 +128,7 @@ func (c *CC) LoadConfig(path string) error {
 }
 
 func getLogLevel() zerolog.Level {
-	logLevel := zerolog.ErrorLevel
+	logLevel := zerolog.FatalLevel
 
 	for _, arg := range os.Args {
 		if strings.HasPrefix(strings.ToLower(arg), "--verbosity=") {
@@ -131,20 +138,24 @@ func getLogLevel() zerolog.Level {
 			}
 			switch intLevel {
 			case 1:
-				logLevel = zerolog.InfoLevel
+				logLevel = zerolog.ErrorLevel
 			case 2:
-				logLevel = zerolog.DebugLevel
+				logLevel = zerolog.InfoLevel
 			case 3:
+				logLevel = zerolog.DebugLevel
+			case 4:
 				logLevel = zerolog.TraceLevel
 			}
 
 		}
 		switch arg {
 		case "-v":
-			logLevel = zerolog.InfoLevel
+			logLevel = zerolog.ErrorLevel
 		case "-vv":
-			logLevel = zerolog.DebugLevel
+			logLevel = zerolog.InfoLevel
 		case "-vvv":
+			logLevel = zerolog.DebugLevel
+		case "-vvvv":
 			logLevel = zerolog.TraceLevel
 		}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	"github.com/pkg/errors"
 )
 
 type ImportCmd struct {
@@ -33,7 +34,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
-	err = validatePlugin(providerClient, c, providerConfigs)
+	err = validatePlugin(providerClient, c, providerConfigs, providerName)
 	if err != nil {
 		return err
 	}
@@ -54,7 +55,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 		return err
 	}
 
-	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs)
+	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs, defaultProviderName)
 	if err != nil {
 		return err
 	}
@@ -70,6 +71,11 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	doneReadErrors := make(chan bool, 1)
 	recvSuccess := 0
 	sendSuccess := 0
+	errorCount := 0
+
+	importProgress := c.Ui.Progress("Importing users")
+
+	importProgress.Start()
 
 	// send config
 	importConfigReq := &proto.ImportRequest{
@@ -79,7 +85,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	}
 
 	if err = importClient.Send(importConfigReq); err != nil {
-		c.Log.Error().Msg(err.Error())
+		return errors.Wrap(err, "cannot sent config")
 	}
 
 	// send users
@@ -108,6 +114,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 			if err = importClient.Send(req); err != nil {
 				c.Log.Error().Msg(err.Error())
 			}
+			sendSuccess++
 		}
 	}()
 
@@ -119,12 +126,12 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 				doneReadErrors <- true
 				return
 			}
+			errorCount++
 			if err != nil {
 				c.Log.Error().Msg(err.Error())
 			}
 			if respErr := res.GetError(); respErr != nil {
 				c.Log.Error().Msg(respErr.Message)
-				continue
 			}
 		}
 	}()
@@ -165,7 +172,12 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 
 	<-doneReadErrors
 
-	c.Log.Info().Msg(fmt.Sprintf("Received: %d\n", recvSuccess))
-	c.Log.Info().Msg(fmt.Sprintf("Sent: %d\n", sendSuccess))
+	importProgress.Stop()
+	c.Ui.Normal().WithTable("Status", "N° of users").
+		WithTableRow("Users sent", fmt.Sprintf("%d", sendSuccess)).
+		WithTableRow("Users received", fmt.Sprintf("%d", recvSuccess)).
+		WithTableRow("Errors", fmt.Sprintf("%d", errorCount)).Do()
+
+	c.Ui.Success().Msg("Import done")
 	return nil
 }
