@@ -69,8 +69,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	doneImport := make(chan bool, 1)
 	doneExport := make(chan bool, 1)
 	doneReadErrors := make(chan bool, 1)
-	recvSuccess := 0
-	sendSuccess := 0
+	successCount := 0
 	errorCount := 0
 
 	importProgress := c.Ui.Progress("Importing users")
@@ -114,7 +113,6 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 			if err = importClient.Send(req); err != nil {
 				c.Log.Error().Msg(err.Error())
 			}
-			sendSuccess++
 		}
 	}()
 
@@ -159,7 +157,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 					users <- u
 				}
 			}
-			recvSuccess++
+			successCount++
 		}
 	}()
 
@@ -174,9 +172,8 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 
 	importProgress.Stop()
 	c.Ui.Normal().WithTable("Status", "N° of users").
-		WithTableRow("Users sent", fmt.Sprintf("%d", sendSuccess)).
-		WithTableRow("Users received", fmt.Sprintf("%d", recvSuccess)).
-		WithTableRow("Errors", fmt.Sprintf("%d", errorCount)).Do()
+		WithTableRow("Succeeded", fmt.Sprintf("%d", successCount)).
+		WithTableRow("Errored", fmt.Sprintf("%d", errorCount)).Do()
 
 	c.Ui.Success().Msg("Import done")
 	return nil
