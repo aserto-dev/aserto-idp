@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
+	"github.com/aserto-dev/idp-plugin-sdk/grpcplugin"
 )
 
 type Provider interface {

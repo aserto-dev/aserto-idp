@@ -7,8 +7,8 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 	"github.com/pkg/errors"
 )
 
@@ -102,11 +102,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 
 			req := &proto.ImportRequest{
 				Data: &proto.ImportRequest_User{
-					User: &proto.User{
-						Data: &proto.User_User{
-							User: user,
-						},
-					},
+					User: user,
 				},
 			}
 			c.Log.Trace().Msg(fmt.Sprintf("Sending user: %s", req))
@@ -153,9 +149,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 			}
 
 			if user := resp.GetUser(); user != nil {
-				if u := user.GetUser(); u != nil {
-					users <- u
-				}
+				users <- user
 			}
 			successCount++
 		}
