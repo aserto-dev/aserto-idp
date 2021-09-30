@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/aserto-dev/aserto-idp/pkg/proto"
@@ -75,11 +76,11 @@ func (s Auth0PluginServer) Import(srv proto.Plugin_ImportServer) error {
 	return nil
 }
 
-// func (s pluginServer) Delete(srv proto.Plugin_DeleteServer) error {
-// 	return fmt.Errorf("not implemented")
-// }
+func (s Auth0PluginServer) Delete(srv proto.Plugin_DeleteServer) error {
+	return fmt.Errorf("not implemented")
+}
 
-func (Auth0PluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
+func (s Auth0PluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
 	response := &proto.ValidateResponse{}
 	cfg, err := config.NewConfig(req.Config)
 	if err != nil {

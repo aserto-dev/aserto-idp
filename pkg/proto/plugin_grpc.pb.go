@@ -21,7 +21,7 @@ type PluginClient interface {
 	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
 	Import(ctx context.Context, opts ...grpc.CallOption) (Plugin_ImportClient, error)
 	Export(ctx context.Context, in *ExportRequest, opts ...grpc.CallOption) (Plugin_ExportClient, error)
-	// rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+	Delete(ctx context.Context, opts ...grpc.CallOption) (Plugin_DeleteClient, error)
 	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
 }
 
@@ -105,6 +105,37 @@ func (x *pluginExportClient) Recv() (*ExportResponse, error) {
 	return m, nil
 }
 
+func (c *pluginClient) Delete(ctx context.Context, opts ...grpc.CallOption) (Plugin_DeleteClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Plugin_ServiceDesc.Streams[2], "/proto.Plugin/Delete", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pluginDeleteClient{stream}
+	return x, nil
+}
+
+type Plugin_DeleteClient interface {
+	Send(*DeleteRequest) error
+	Recv() (*DeleteResponse, error)
+	grpc.ClientStream
+}
+
+type pluginDeleteClient struct {
+	grpc.ClientStream
+}
+
+func (x *pluginDeleteClient) Send(m *DeleteRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *pluginDeleteClient) Recv() (*DeleteResponse, error) {
+	m := new(DeleteResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *pluginClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error) {
 	out := new(ValidateResponse)
 	err := c.cc.Invoke(ctx, "/proto.Plugin/Validate", in, out, opts...)
@@ -121,7 +152,7 @@ type PluginServer interface {
 	Info(context.Context, *InfoRequest) (*InfoResponse, error)
 	Import(Plugin_ImportServer) error
 	Export(*ExportRequest, Plugin_ExportServer) error
-	// rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+	Delete(Plugin_DeleteServer) error
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 }
 
@@ -137,6 +168,9 @@ func (UnimplementedPluginServer) Import(Plugin_ImportServer) error {
 }
 func (UnimplementedPluginServer) Export(*ExportRequest, Plugin_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
+}
+func (UnimplementedPluginServer) Delete(Plugin_DeleteServer) error {
+	return status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedPluginServer) Validate(context.Context, *ValidateRequest) (*ValidateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
@@ -218,6 +252,32 @@ func (x *pluginExportServer) Send(m *ExportResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Plugin_Delete_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PluginServer).Delete(&pluginDeleteServer{stream})
+}
+
+type Plugin_DeleteServer interface {
+	Send(*DeleteResponse) error
+	Recv() (*DeleteRequest, error)
+	grpc.ServerStream
+}
+
+type pluginDeleteServer struct {
+	grpc.ServerStream
+}
+
+func (x *pluginDeleteServer) Send(m *DeleteResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *pluginDeleteServer) Recv() (*DeleteRequest, error) {
+	m := new(DeleteRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Plugin_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ValidateRequest)
 	if err := dec(in); err != nil {
@@ -263,6 +323,12 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Export",
 			Handler:       _Plugin_Export_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "Delete",
+			Handler:       _Plugin_Delete_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "plugin.proto",

@@ -74,54 +74,6 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
     no_unique_dist_dir: true
 
-  - id: aserto-idp-plugin-dummy
-    main: ./plugins/dummy/cmd/aserto-idp-plugin-dummy
-    binary: aserto-idp-plugin-dummy
-    goos:
-      - darwin
-      - linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    env:
-      - CGO_ENABLED=0
-    ignore:
-      - goos: windows
-        goarch: arm64
-    ldflags:
-      - -s
-      - -w
-      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.ver={{.Version}}
-      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.commit={{.ShortCommit}}
-      - -X github.com/aserto-dev/aserto-idp/plugins/dummy/pkg/config.date={{.Date}}
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    no_unique_dist_dir: true
-
-  - id: aserto-idp-plugin-json
-    main: ./plugins/json/cmd/aserto-idp-plugin-json
-    binary: aserto-idp-plugin-json
-    goos:
-      - darwin
-      - linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    env:
-      - CGO_ENABLED=0
-    ignore:
-      - goos: windows
-        goarch: arm64
-    ldflags:
-      - -s
-      - -w
-      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.ver={{.Version}}
-      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.commit={{.ShortCommit}}
-      - -X github.com/aserto-dev/aserto-idp/plugins/json/pkg/config.date={{.Date}}
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    no_unique_dist_dir: true
-
 archives:
   - format: zip
     replacements:
