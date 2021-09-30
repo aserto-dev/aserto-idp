@@ -48,19 +48,16 @@ message ExportResponse{
       }
 }
 
-// message DeleteRequest{
-//     map<string,string> options=1;
-//     oneof data {
-//         aserto.api.v1.User user = 3;
-//         aserto.api.v1.UserExt user_ext = 4;
-//       }
-// }
+message DeleteRequest{
+    oneof data {
+        google.protobuf.Struct config=1;
+        User user = 2;
+      }
+}
 
-// message DeleteResponse{
-//      int32 succededCount=1;
-//      int32 failCount=2;
-//      repeated google.rpc.Status status = 3;
-// }
+message DeleteResponse{
+  google.rpc.Status error = 1;
+}
 
 message ValidateRequest{
     google.protobuf.Struct config=1;
@@ -74,6 +71,6 @@ service Plugin {
     rpc Info(InfoRequest) returns (InfoResponse);
     rpc Import(stream ImportRequest) returns (stream ImportResponse);
     rpc Export(ExportRequest) returns (stream ExportResponse);
-    // rpc Delete(stream DeleteRequest) returns (DeleteResponse);
+    rpc Delete(stream DeleteRequest) returns (stream DeleteResponse);
     rpc Validate(ValidateRequest) returns (ValidateResponse);
 }

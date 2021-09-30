@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 
@@ -109,9 +110,9 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 	return result.Err
 }
 
-// func (s pluginServer) Delete(srv proto.Plugin_DeleteServer) error {
-// 	return fmt.Errorf("not implemented")
-// }
+func (s AsertoPluginServer) Delete(srv proto.Plugin_DeleteServer) error {
+	return fmt.Errorf("not implemented")
+}
 
 // Validate that one use can be retrieved
 func (s AsertoPluginServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
