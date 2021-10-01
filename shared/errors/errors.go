@@ -3,7 +3,7 @@ package errors
 import (
 	"log"
 
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
+	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 )
 

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/aserto-dev/aserto-idp/pkg/x"
-	"github.com/aserto-dev/aserto-idp/shared"
-	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
 	"github.com/aserto-dev/go-utils/logger"
+	"github.com/aserto-dev/idp-plugin-sdk/grpcplugin"
+	sdk "github.com/aserto-dev/idp-plugin-sdk/plugin"
 	"github.com/hashicorp/go-plugin"
 	"github.com/rs/zerolog"
 )
@@ -28,8 +28,8 @@ func NewIDPProvider(log *zerolog.Logger, path string) Provider {
 	hcpLogger := logger.NewHCLogger(log)
 
 	idpProvider.client = plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig: shared.Handshake,
-		Plugins:         shared.PluginMap,
+		HandshakeConfig: sdk.Handshake,
+		Plugins:         sdk.PluginMap,
 		Cmd:             exec.Command(path),
 		Logger:          hcpLogger,
 		Managed:         false,

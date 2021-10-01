@@ -3,8 +3,8 @@ package plugin
 import (
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
-	"github.com/aserto-dev/aserto-idp/shared/grpcplugin"
+	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/aserto-dev/idp-plugin-sdk/grpcplugin"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

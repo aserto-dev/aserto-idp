@@ -3,7 +3,7 @@ package version
 import (
 	"fmt"
 
-	"github.com/aserto-dev/aserto-idp/shared/version"
+	"github.com/aserto-dev/idp-plugin-sdk/version"
 )
 
 // values set by linker using ldflag -X

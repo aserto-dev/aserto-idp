@@ -7,9 +7,9 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/cmd/plugin"
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
+	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 )
 
 type Plugin struct {

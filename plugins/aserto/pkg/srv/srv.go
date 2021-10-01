@@ -9,12 +9,12 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc"
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/authorizer"
 	"github.com/aserto-dev/aserto-idp/pkg/grpcc/directory"
-	"github.com/aserto-dev/aserto-idp/pkg/proto"
 	"github.com/aserto-dev/aserto-idp/plugins/aserto/pkg/config"
 	grpcerr "github.com/aserto-dev/aserto-idp/shared/errors"
-	"github.com/aserto-dev/aserto-idp/shared/version"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	dir "github.com/aserto-dev/go-grpc/aserto/authorizer/directory/v1"
+	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/aserto-dev/idp-plugin-sdk/version"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -82,9 +82,7 @@ func (s AsertoPluginServer) Import(srv proto.Plugin_ImportServer) error {
 			}
 
 			if user := req.GetUser(); user != nil {
-				if u := user.GetUser(); u != nil {
-					users <- u
-				}
+				users <- user
 			}
 		}
 	}()
@@ -192,11 +190,7 @@ func (s AsertoPluginServer) Export(req *proto.ExportRequest, srv proto.Plugin_Ex
 		for _, u := range resp.Results {
 			res := &proto.ExportResponse{
 				Data: &proto.ExportResponse_User{
-					User: &proto.User{
-						Data: &proto.User_User{
-							User: u,
-						},
-					},
+					User: u,
 				},
 			}
 			if err = srv.Send(res); err != nil {
