@@ -7,7 +7,7 @@ go 1.16
 require (
 	github.com/alecthomas/kong v0.2.17
 	github.com/aserto-dev/clui v0.1.2
-	github.com/aserto-dev/go-grpc v0.0.6
+	github.com/aserto-dev/go-grpc v0.0.8-0.20211007104643-202ec2b6a966
 	github.com/aserto-dev/go-utils v0.0.4
 	github.com/aserto-dev/idp-plugin-sdk v0.0.1
 	github.com/aserto-dev/mage-loot v0.4.8
