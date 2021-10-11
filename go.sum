@@ -56,8 +56,9 @@ github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj
 github.com/aserto-dev/clui v0.1.1/go.mod h1:rk87XJefw6Pp8ef3nTirzMVTDE0g2BWojwAZy3cC/TY=
 github.com/aserto-dev/clui v0.1.2 h1:WWLyECVABQ/eRrMSW08lE12Bz8Bh/CDILxpTIoEhOYs=
 github.com/aserto-dev/clui v0.1.2/go.mod h1:rk87XJefw6Pp8ef3nTirzMVTDE0g2BWojwAZy3cC/TY=
-github.com/aserto-dev/go-grpc v0.0.6 h1:CIhbsjoM7MmZo3Bls9iQbCu5z5A1k06ZjFJOWr7P2TM=
 github.com/aserto-dev/go-grpc v0.0.6/go.mod h1:5YmqvgT9WReiXuxWDe36TBBiwlALLHRky5bT2Yf9RcQ=
+github.com/aserto-dev/go-grpc v0.0.8-0.20211007104643-202ec2b6a966 h1:YpVTJOO1aZpwDZyUCXF8I8bhU3iAJswEk65hjYEL39U=
+github.com/aserto-dev/go-grpc v0.0.8-0.20211007104643-202ec2b6a966/go.mod h1:5YmqvgT9WReiXuxWDe36TBBiwlALLHRky5bT2Yf9RcQ=
 github.com/aserto-dev/go-utils v0.0.4 h1:OtrW0DB1Gw8AJitYSTjv7t92+PXpjHNU/F3eZw30xss=
 github.com/aserto-dev/go-utils v0.0.4/go.mod h1:zKVePz9mQEtwkykGqJwhS/52yNj4POqR+yyb9ZWK46g=
 github.com/aserto-dev/idp-plugin-sdk v0.0.1 h1:OiOzqt5JDY69cp5PCYAAqM9y6duE3ctcl3gIGlz0Z0s=

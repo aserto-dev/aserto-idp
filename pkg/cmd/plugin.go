@@ -15,6 +15,7 @@ import (
 type Plugin struct {
 	Export      plugin.ExportCmd  `cmd:""`
 	Import      plugin.ImportCmd  `cmd:""`
+	Delete      plugin.DeleteCmd  `cmd:""`
 	provider    provider.Provider `kong:"-"`
 	Description string            `kong:"-"`
 	Name        string            `kong:"-"`
