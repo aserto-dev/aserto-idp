@@ -64,22 +64,12 @@ func main() {
 			log.Fatal(err.Error())
 		}
 
-		if plugin.Name == x.DefaultPluginName {
-			err := c.SetDefaultProvider(idpProvider)
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-			cli.Plugins = append(cli.Plugins, plugin.Plugins...)
-		} else {
-			err = c.AddProvider(idpProvider)
-			if err != nil {
-				log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
-				continue
-			}
-			dynamicCommand := kong.DynamicCommand(plugin.Name, plugin.Description, "Plugins", plugin)
-			options = append(options, dynamicCommand)
-
+		err = c.AddProvider(idpProvider)
+		if err != nil {
+			log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
+			continue
 		}
+		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
 
 	}
 

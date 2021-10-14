@@ -20,12 +20,11 @@ import (
 // CC contains dependencies that are cross cutting and are needed in most
 // of the providers that make up this application
 type CC struct {
-	Context         context.Context
-	Config          *config.Config
-	Log             *zerolog.Logger
-	Ui              *clui.UI
-	defaultProvider provider.Provider
-	providers       map[string]provider.Provider
+	Context   context.Context
+	Config    *config.Config
+	Log       *zerolog.Logger
+	Ui        *clui.UI
+	providers map[string]provider.Provider
 }
 
 func (ctx *CC) SetLogger(w io.Writer) {
@@ -66,30 +65,8 @@ func (c *CC) AddProvider(prov provider.Provider) error {
 		return fmt.Errorf("provider %s has already been added", provName)
 	}
 
-	if c.defaultProvider != nil {
-		defaultProvName := c.defaultProvider.GetName()
-		if defaultProvName == provName {
-			return fmt.Errorf("cannot add %s because it was set as the default provider", provName)
-		}
-	}
-
 	c.providers[prov.GetName()] = prov
 	return nil
-}
-
-// SetDefaultProvider
-func (c *CC) SetDefaultProvider(prov provider.Provider) error {
-	provName := prov.GetName()
-	if c.ProviderExists(provName) {
-		return fmt.Errorf("cannot set %s as the Default Provider. Provider was already added", provName)
-	}
-	c.defaultProvider = prov
-	return nil
-}
-
-// GetDefaultProvider
-func (c *CC) GetDefaultProvider() provider.Provider {
-	return c.defaultProvider
 }
 
 // GetProvider with the given name
@@ -101,9 +78,6 @@ func (c *CC) GetProvider(name string) provider.Provider {
 func (c *CC) Dispose() {
 	for _, provider := range c.providers {
 		provider.Kill()
-	}
-	if c.defaultProvider != nil {
-		c.defaultProvider.Kill()
 	}
 }
 

@@ -6,16 +6,14 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
-	"github.com/aserto-dev/aserto-idp/pkg/cmd/plugin"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/aserto-dev/idp-plugin-sdk/grpcplugin"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Plugin struct {
-	Export      plugin.ExportCmd  `cmd:""`
-	Import      plugin.ImportCmd  `cmd:""`
-	Delete      plugin.DeleteCmd  `cmd:""`
 	provider    provider.Provider `kong:"-"`
 	Description string            `kong:"-"`
 	Name        string            `kong:"-"`
@@ -92,4 +90,43 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType api.Con
 
 	value := reflect.New(newStruct).Interface()
 	return value
+}
+
+func getPbStructForNode(pluginConfig map[string]interface{}, node *kong.Node) (*structpb.Struct, error) {
+	cliConfigs := getConfigsForNode(node)
+
+	for name, value := range pluginConfig {
+		if _, ok := cliConfigs[name]; !ok {
+			cliConfigs[name] = value
+		}
+	}
+
+	configStruct, err := structpb.NewStruct(cliConfigs)
+	return configStruct, err
+}
+
+func getConfigsForNode(node *kong.Node) map[string]interface{} {
+	config := make(map[string]interface{})
+
+	for _, flag := range node.Flags {
+		// CLI flags do not have groups
+		if flag.Group != nil && flag.Value.Target.Interface() != flag.DefaultValue.Interface() {
+			config[flag.Name] = flag.Value.Target.Interface()
+		}
+	}
+	return config
+}
+
+func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string) error {
+	c.Ui.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
+	validateReq := &proto.ValidateRequest{
+		Config: config,
+	}
+
+	_, err := pluginClient.Validate(c.Context, validateReq)
+
+	if err == nil {
+		c.Ui.Success().Msg("Connection validated.")
+	}
+	return err
 }
