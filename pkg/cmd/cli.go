@@ -11,6 +11,8 @@ import (
 
 type CLI struct {
 	Config    string     `short:"c" type:"path" help:"Path to the config file. Any argument provided to the CLI will take precedence."`
+	Delete    DeleteCmd  `cmd:"" help:"delete user ids from an user-provider idp"`
+	Exec      ExecCmd    `cmd:"" help:"import users from an user-provided idp to another user-provided idp"`
 	Version   VersionCmd `cmd:"" help:"version information"`
 	Verbosity int        `short:"v" type:"counter" help:"Use to increase output verbosity."`
 	kong.Plugins

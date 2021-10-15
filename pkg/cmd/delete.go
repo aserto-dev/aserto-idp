@@ -1,4 +1,4 @@
-package plugin
+package cmd
 
 import (
 	"fmt"
@@ -8,16 +8,23 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type DeleteCmd struct {
+	From    string   `short:"f" help:"The idp provider name you want to delete from"`
 	UserIds []string `arg:"" name:"user_id" help:"Users to remove." type:"string"`
 }
 
-func (cmd *DeleteCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
+func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 
-	providerName := context.Selected().Parent.Name
-	providerConfigs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Selected().Parent)
+	if cmd.From == "" || !c.ProviderExists(cmd.From) {
+		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+	}
+
+	providerName := cmd.From
+	providerConfigs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}

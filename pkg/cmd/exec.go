@@ -1,4 +1,4 @@
-package plugin
+package cmd
 
 import (
 	"fmt"
@@ -10,57 +10,66 @@ import (
 	api "github.com/aserto-dev/go-grpc/aserto/api/v1"
 	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type ImportCmd struct {
+type ExecCmd struct {
+	From string `short:"f" help:"The idp name you want to import from"`
+	To   string `short:"t" help:"The idp name you want to import to"`
 }
 
-func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error {
+func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 
-	//TODO: Handle this
-	includeExt := false
+	if cmd.From == "" || !c.ProviderExists(cmd.From) {
+		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+	}
 
-	providerName := context.Selected().Parent.Name
-	providerConfigs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Selected().Parent)
+	if cmd.To == "" || !c.ProviderExists(cmd.To) {
+		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+	}
+
+	sourceProviderName := cmd.From
+	sourceProviderConfigs, err := getPbStructForNode(c.Config.Plugins[sourceProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
 	req := &proto.ExportRequest{
-		Config: providerConfigs,
+		Config: sourceProviderConfigs,
 	}
 
-	providerClient, err := c.GetProvider(providerName).PluginClient()
+	sourceProviderClient, err := c.GetProvider(sourceProviderName).PluginClient()
 	if err != nil {
 		return err
 	}
 
-	err = validatePlugin(providerClient, c, providerConfigs, providerName)
+	err = validatePlugin(sourceProviderClient, c, sourceProviderConfigs, sourceProviderName)
 	if err != nil {
 		return err
 	}
 
-	exportClient, err := providerClient.Export(c.Context, req)
+	exportClient, err := sourceProviderClient.Export(c.Context, req)
 	if err != nil {
 		return err
 	}
 
-	defaultProviderName := c.GetDefaultProvider().GetName()
-	defaultProviderConfigs, err := getPbStructForNode(c.Config.Plugins[defaultProviderName], context.Path[0].Node())
+	destinationProviderName := cmd.To
+	destinationProviderConfigs, err := getPbStructForNode(c.Config.Plugins[destinationProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
 
-	defaultProviderClient, err := c.GetDefaultProvider().PluginClient()
+	destinationProviderClient, err := c.GetProvider(destinationProviderName).PluginClient()
 	if err != nil {
 		return err
 	}
 
-	err = validatePlugin(defaultProviderClient, c, defaultProviderConfigs, defaultProviderName)
+	err = validatePlugin(destinationProviderClient, c, destinationProviderConfigs, destinationProviderName)
 	if err != nil {
 		return err
 	}
 
-	importClient, err := defaultProviderClient.Import(c.Context)
+	importClient, err := destinationProviderClient.Import(c.Context)
 	if err != nil {
 		return err
 	}
@@ -79,7 +88,7 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 	// send config
 	importConfigReq := &proto.ImportRequest{
 		Data: &proto.ImportRequest_Config{
-			Config: defaultProviderConfigs,
+			Config: destinationProviderConfigs,
 		},
 	}
 
@@ -94,10 +103,6 @@ func (cmd *ImportCmd) Run(app *kong.Kong, context *kong.Context, c *cc.CC) error
 			if !more {
 				doneImport <- true
 				return
-			}
-			if !includeExt {
-				user.Attributes = &api.AttrSet{}
-				user.Applications = make(map[string]*api.AttrSet)
 			}
 
 			req := &proto.ImportRequest{
