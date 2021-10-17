@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
@@ -144,7 +143,9 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 				return
 			}
 			if err != nil {
-				log.Fatalf("cannot receive %v", err)
+				c.Log.Error().Msgf("cannot receive %v", err)
+				doneExport <- true
+				return
 			}
 			c.Log.Trace().Msg(fmt.Sprintf("Resp received: %s", resp.Data))
 

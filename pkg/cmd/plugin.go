@@ -30,6 +30,8 @@ type PluginFlag struct {
 	IntFlag    int    `kong:"-"`
 }
 
+var flagsMap = map[string]string{}
+
 func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 
 	plugin := Plugin{}
@@ -50,6 +52,12 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
 
 	for _, config := range providerInfo.Configs {
+		if flagsMap[config.Name] != "" && flagsMap[config.Name] != plugin.Name {
+			c.Ui.Problem().Msg(fmt.Sprintf("plugins %s and %s share an identical flag named: %s", flagsMap[config.Name], plugin.Name, config.Name))
+			return nil, fmt.Errorf("plugins %s and %s share an identical flag named: %s", flagsMap[config.Name], plugin.Name, config.Name)
+		} else {
+			flagsMap[config.Name] = plugin.Name
+		}
 		plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Description, plugin.Name, config.Type))
 	}
 
