@@ -16,13 +16,21 @@ import (
 func main() {
 	c := cc.New()
 
+	err := appStart(c)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
+func appStart(c *cc.CC) error {
 	cli := cmd.CLI{}
 
 	envFinder := finder.NewEnvironment()
 
 	pluginPaths, err := envFinder.Find()
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	defer func() {
@@ -59,16 +67,17 @@ func main() {
 			continue
 		}
 
-		plugin, err := cmd.NewPlugin(idpProvider, c)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
 		err = c.AddProvider(idpProvider)
 		if err != nil {
 			log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
 			continue
 		}
+
+		plugin, err := cmd.NewPlugin(idpProvider, c)
+		if err != nil {
+			return err
+		}
+
 		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
 
 	}
@@ -77,12 +86,15 @@ func main() {
 
 	err = c.LoadConfig(strings.TrimSpace(cli.Config))
 	if err != nil {
-		c.Log.Fatal().Msg(err.Error())
+		return err
 	}
 
 	err = ctx.Run(c)
 
 	if err != nil {
 		c.Ui.Problem().Msg(err.Error())
+		return err
 	}
+
+	return nil
 }
