@@ -25,7 +25,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 	}
 
 	if cmd.To == "" || !c.ProviderExists(cmd.To) {
-		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+		return status.Error(codes.InvalidArgument, "no \"--to\" idp or an unavailable idp was provided")
 	}
 
 	sourceProviderName := cmd.From
