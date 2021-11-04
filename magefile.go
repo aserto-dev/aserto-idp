@@ -43,6 +43,11 @@ func Clean() error {
 	return os.RemoveAll("dist")
 }
 
+// Release releases the project.
+func Release() error {
+	return common.Release()
+}
+
 // BuildAll builds all binaries in ./cmd for
 // all configured operating systems and architectures.
 func BuildAll() error {
