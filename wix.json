@@ -1,0 +1,32 @@
+{
+    "product": "Aserto-IDP CLI",
+    "company": "Aserto, Inc.",
+    "license": "LICENSE",
+    "upgrade-code": "f107e4e8-8e23-4ac5-a82c-fba9a82569bf",
+    "files": {
+      "guid": "9aec6472-6667-4c3b-8882-8b13d6ea3977",
+      "items": [
+        "aserto-idp.exe"
+      ]
+    },
+    "env": {
+      "guid": "6164ce89-f038-4b80-bc0f-4600c806b9e5",
+      "vars": [
+        {
+          "name": "PATH",
+          "value": "[INSTALLDIR]",
+          "permanent": "yes",
+          "system": "no",
+          "action": "set",
+          "part": "last"
+        }
+      ]
+    },
+    "shortcuts": {},
+    "choco": {
+      "description": "Aserto-IDP CLI",
+      "project-url": "https://github.com/aserto-dev/aserto-idp",
+      "tags": "aserto idp cli",
+      "license-url": "https://github.com/aserto-dev/aserto-idp/blob/main/LICENSE"
+    }
+  }
