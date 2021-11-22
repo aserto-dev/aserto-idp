@@ -13,14 +13,37 @@ import (
 )
 
 type DeleteCmd struct {
-	From    string   `short:"f" help:"The idp provider name you want to delete from"`
-	UserIds []string `arg:"" name:"user_id" help:"Users to remove." type:"string"`
+	From          string   `short:"f" help:"The idp provider name you want to delete from"`
+	UserIds       []string `arg:"" name:"user_id" help:"Users to remove." type:"string"`
+	NoUpdateCheck bool     `short:"n" help:"Don't check for plugins updates"`
 }
 
 func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 
-	if cmd.From == "" || !c.ProviderExists(cmd.From) {
-		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+	if cmd.From == "" {
+		return status.Error(codes.InvalidArgument, "no \"--from\" idp was provided")
+	}
+
+	if !cmd.NoUpdateCheck && c.ProviderExists(cmd.From) {
+		sourceUpdates, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
+		if err != nil {
+			c.Ui.Exclamation().Msgf("Failed to check for updates for %s, %w", cmd.From, err)
+		}
+
+		if sourceUpdates {
+			c.Ui.Exclamation().Msgf("A new version of the plugin %s is available", cmd.From)
+		}
+	}
+
+	if !c.ProviderExists(cmd.From) {
+		if cmd.NoUpdateCheck {
+			return status.Error(codes.InvalidArgument, "unavailable \"--from\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
+		} else {
+			err := downloadProvider(cmd.From, c)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	providerName := cmd.From

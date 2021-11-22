@@ -11,6 +11,8 @@ import (
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
+	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
+	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
 	"github.com/aserto-dev/clui"
 	"github.com/aserto-dev/go-utils/logger"
 	"github.com/pkg/errors"
@@ -24,6 +26,7 @@ type CC struct {
 	Config    *config.Config
 	Log       *zerolog.Logger
 	Ui        *clui.UI
+	Retriever retriever.Retriever
 	providers map[string]provider.Provider
 }
 
@@ -42,11 +45,14 @@ func New() *CC {
 
 	ui := clui.NewUIWithOutput(writter)
 
+	ghcr := retriever.NewGhcrRetriever()
+
 	ctx := CC{
 		Context:   context.Background(),
 		Config:    &config.Config{},
 		Log:       log,
 		Ui:        ui,
+		Retriever: ghcr,
 		providers: make(map[string]provider.Provider),
 	}
 	return &ctx
@@ -67,6 +73,10 @@ func (c *CC) AddProvider(prov provider.Provider) error {
 
 	c.providers[prov.GetName()] = prov
 	return nil
+}
+
+func (c *CC) GetProviders() map[string]provider.Provider {
+	return c.providers
 }
 
 // GetProvider with the given name
@@ -98,6 +108,32 @@ func (c *CC) LoadConfig(path string) error {
 			c.Log = log
 		}
 	}
+	return nil
+}
+
+func (c *CC) LoadProviders() error {
+	envFinder := finder.NewHomeDir()
+
+	pluginPaths, err := envFinder.Find()
+	if err != nil {
+		return err
+	}
+	for _, pluginPath := range pluginPaths {
+		idpProvider := provider.NewIDPProvider(c.Log, pluginPath)
+
+		if c.ProviderExists(idpProvider.GetName()) {
+			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), idpProvider.GetPath(), pluginPath)
+			continue
+		}
+
+		err = c.AddProvider(idpProvider)
+		if err != nil {
+			log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
+			continue
+		}
+
+	}
+
 	return nil
 }
 

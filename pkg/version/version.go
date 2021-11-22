@@ -17,6 +17,12 @@ func getVersion() (string, string, string) {
 	return ver, date, commit
 }
 
+func GetVer() string {
+	buildInfo := version.GetBuildInfo(getVersion)
+
+	return buildInfo.Version
+}
+
 func GetVersionString() string {
 	buildInfo := version.GetBuildInfo(getVersion)
 

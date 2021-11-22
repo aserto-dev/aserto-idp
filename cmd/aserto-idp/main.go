@@ -10,6 +10,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
+	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 )
 
@@ -26,7 +27,7 @@ func main() {
 func appStart(c *cc.CC) error {
 	cli := cmd.CLI{}
 
-	envFinder := finder.NewEnvironment()
+	envFinder := finder.NewHomeDir()
 
 	pluginPaths, err := envFinder.Find()
 	if err != nil {
@@ -43,7 +44,7 @@ func appStart(c *cc.CC) error {
 			c.Dispose()
 			os.Exit(exitCode)
 		}),
-		kong.Description(x.AppDescription),
+		kong.Description(constructDescription(c.Retriever)),
 		kong.UsageOnError(),
 
 		kong.ConfigureHelp(kong.HelpOptions{
@@ -57,6 +58,10 @@ func appStart(c *cc.CC) error {
 		}),
 		kong.Bind(c),
 		kong.Vars{"defaultEnv": x.DefaultEnv},
+	}
+
+	if err != nil {
+		return err
 	}
 
 	for _, pluginPath := range pluginPaths {
@@ -97,4 +102,20 @@ func appStart(c *cc.CC) error {
 	}
 
 	return nil
+}
+
+func constructDescription(ghcr retriever.Retriever) string {
+
+	plugins := retriever.PluginVersions(ghcr)
+	if len(plugins) == 0 {
+		return x.AppDescription
+	}
+
+	header := x.AppDescription + "\n " + "Plugins available to download:"
+
+	for key := range plugins {
+		header = header + "\n " + key
+	}
+
+	return header
 }

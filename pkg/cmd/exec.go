@@ -14,18 +14,59 @@ import (
 )
 
 type ExecCmd struct {
-	From string `short:"f" help:"The idp name you want to import from"`
-	To   string `short:"t" help:"The idp name you want to import to"`
+	From          string `short:"f" help:"The idp name you want to import from"`
+	To            string `short:"t" help:"The idp name you want to import to"`
+	NoUpdateCheck bool   `short:"n" help:"Don't check for plugins updates"`
 }
 
 func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 
-	if cmd.From == "" || !c.ProviderExists(cmd.From) {
-		return status.Error(codes.InvalidArgument, "no \"--from\" idp or an unavailable idp was provided")
+	if cmd.From == "" {
+		return status.Error(codes.InvalidArgument, "no \"--from\" idp was provided")
 	}
 
-	if cmd.To == "" || !c.ProviderExists(cmd.To) {
-		return status.Error(codes.InvalidArgument, "no \"--to\" idp or an unavailable idp was provided")
+	if cmd.To == "" {
+		return status.Error(codes.InvalidArgument, "no \"--to\" idp was provided")
+	}
+
+	if c.ProviderExists(cmd.From) && c.ProviderExists(cmd.To) && !cmd.NoUpdateCheck {
+		sourceUpdates, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
+		if err != nil {
+			c.Ui.Exclamation().Msgf("failed to check for updates for %s, %w", cmd.From, err)
+		}
+		destinationUpdates, err := checkForUpdates(c.GetProvider(cmd.To), c.Retriever)
+		if err != nil {
+			c.Ui.Exclamation().Msgf("failed to check for updates for %s, %w", cmd.To, err)
+		}
+
+		if sourceUpdates {
+			c.Ui.Exclamation().Msgf("a new version of the plugin %s is available", cmd.From)
+		}
+		if destinationUpdates {
+			c.Ui.Exclamation().Msgf("a new version of the plugin %s is available", cmd.To)
+		}
+	}
+
+	if !c.ProviderExists(cmd.From) {
+		if cmd.NoUpdateCheck {
+			return status.Error(codes.InvalidArgument, "unavailable \"--from\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
+		} else {
+			err := downloadProvider(cmd.From, c)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if !c.ProviderExists(cmd.To) {
+		if cmd.NoUpdateCheck {
+			return status.Error(codes.InvalidArgument, "unavailable \"--to\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
+		} else {
+			err := downloadProvider(cmd.To, c)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	sourceProviderName := cmd.From
