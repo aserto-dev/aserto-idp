@@ -44,12 +44,7 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 }
 
 func downloadProvider(pluginName string, c *cc.CC) error {
-	store := c.Retriever
-	err := store.Connect()
-	if err != nil {
-		return err
-	}
-	err = store.Download(pluginName, "latest")
+	err := c.Retriever.Download(pluginName, "latest")
 	if err != nil {
 		return err
 	}

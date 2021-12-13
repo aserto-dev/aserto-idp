@@ -21,16 +21,16 @@ import (
 	"oras.land/oras-go/pkg/oras"
 )
 
-var arch = runtime.GOARCH
-var opsys = runtime.GOOS
-
 type GhcrRetriever struct {
-	Store         *content.OCIStore
-	StoreLocation string
+	Store               *content.OCIStore
+	RemoteStoreLocation string
+	LocalStoreLocation  string
 }
 
 func NewGhcrRetriever() *GhcrRetriever {
-	return &GhcrRetriever{}
+	return &GhcrRetriever{
+		RemoteStoreLocation: fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s", runtime.GOOS, runtime.GOARCH),
+	}
 }
 
 func (o *GhcrRetriever) Connect() error {
@@ -40,9 +40,13 @@ func (o *GhcrRetriever) Connect() error {
 		return err
 	}
 
-	o.StoreLocation = filepath.Join(homeDir, ".aserto", "idpplugins")
+	o.LocalStoreLocation = filepath.Join(homeDir, ".aserto", "idpplugins", "ociStore")
+	err = os.MkdirAll(o.LocalStoreLocation, 0777)
+	if err != nil {
+		return err
+	}
 
-	ociStore, err := content.NewOCIStore(o.StoreLocation)
+	ociStore, err := content.NewOCIStore(o.LocalStoreLocation)
 	if err != nil {
 		return err
 	}
@@ -57,8 +61,16 @@ func (o *GhcrRetriever) Connect() error {
 	return nil
 }
 
+func (o *GhcrRetriever) Disconnect() error {
+	err := os.RemoveAll(o.LocalStoreLocation)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (o *GhcrRetriever) List() ([]string, error) {
-	repoName := fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s", opsys, arch)
+	repoName := o.RemoteStoreLocation
 	repo, err := name.NewRepository(repoName)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid repo name [%s]", repoName)
@@ -98,26 +110,18 @@ func (o *GhcrRetriever) Download(pluginName string, version string) error {
 		return errors.New("incompatible version wa provided for download; abort...")
 	}
 
-	ref := fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s:%s-%s", opsys, arch, pluginName, version)
+	ref := fmt.Sprintf("%s:%s-%s", o.RemoteStoreLocation, pluginName, version)
 	err := o.pull(ref)
 	if err != nil {
 		return err
 	}
 
-	compressedDestFilePath := filepath.Join(o.StoreLocation, x.PluginPrefix+pluginName)
-	err = o.save(ref, compressedDestFilePath)
+	dest := strings.ReplaceAll(o.LocalStoreLocation, "ociStore", "")
+	destFilePath := filepath.Join(dest, x.PluginPrefix+pluginName)
+	err = o.save(ref, destFilePath)
 	if err != nil {
 		return err
 	}
-
-	// err = fsutil.ExtractTarGz(compressedDestFilePath, o.StoreLocation)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = os.Remove(compressedDestFilePath)
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

@@ -23,12 +23,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		c.Log.Warn().Msg("no version was provided; downloading latest...")
 	}
 
-	ghcr := c.Retriever
-	err := ghcr.Connect()
-	if err != nil {
-		return err
-	}
-	err = ghcr.Download(cmd.Name, cmd.Version)
+	err := c.Retriever.Download(cmd.Name, cmd.Version)
 	if err != nil {
 		return err
 	}

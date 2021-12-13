@@ -94,6 +94,12 @@ func appStart(c *cc.CC) error {
 		return err
 	}
 
+	//TODO add config option for custom package repo
+	err = c.ConnectRetriever()
+	if err != nil {
+		return err
+	}
+
 	err = ctx.Run(c)
 
 	if err != nil {

@@ -86,9 +86,19 @@ func (c *CC) GetProvider(name string) provider.Provider {
 
 // Dispose all the resources. This can be called any number of times
 func (c *CC) Dispose() {
+	c.Retriever.Disconnect()
 	for _, provider := range c.providers {
 		provider.Kill()
 	}
+}
+
+func (c *CC) ConnectRetriever() error {
+	err := c.Retriever.Connect()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // LoadConfig loads the plugin and logger config from a configuration file
