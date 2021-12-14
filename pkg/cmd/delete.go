@@ -27,7 +27,7 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 	if !cmd.NoUpdateCheck && c.ProviderExists(cmd.From) {
 		sourceUpdates, latest, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
 		if err != nil {
-			c.Ui.Exclamation().Msgf("Failed to check for updates for %s, %w", cmd.From, err)
+			c.Ui.Exclamation().WithErr(err).Msgf("Failed to check for updates for %s", cmd.From)
 		}
 
 		if sourceUpdates {

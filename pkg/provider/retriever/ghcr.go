@@ -68,12 +68,8 @@ func (o *GhcrRetriever) Connect() error {
 	return nil
 }
 
-func (o *GhcrRetriever) Disconnect() error {
-	err := os.RemoveAll(o.LocalStoreLocation)
-	if err != nil {
-		return err
-	}
-	return nil
+func (o *GhcrRetriever) Disconnect() {
+	_ = os.RemoveAll(o.LocalStoreLocation)
 }
 
 func (o *GhcrRetriever) List() ([]string, error) {

@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/kong v0.2.17
 	github.com/aserto-dev/clui v0.1.8
 	github.com/aserto-dev/go-grpc v0.0.26
-	github.com/aserto-dev/go-utils v0.2.3
+	github.com/aserto-dev/go-utils v0.2.5
 	github.com/aserto-dev/idp-plugin-sdk v0.0.5
 	github.com/aserto-dev/mage-loot v0.4.16
 	github.com/containerd/containerd v1.5.8
@@ -16,6 +16,7 @@ require (
 	github.com/hashicorp/go-plugin v1.4.3
 	github.com/hashicorp/go-version v1.3.0
 	github.com/magefile/mage v1.11.0
+	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.23.0
 	github.com/spf13/viper v1.8.1
@@ -49,7 +50,6 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
-	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

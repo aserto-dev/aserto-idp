@@ -32,11 +32,11 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 	if c.ProviderExists(cmd.From) && c.ProviderExists(cmd.To) && !cmd.NoUpdateCheck {
 		sourceUpdates, latestFrom, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
 		if err != nil {
-			c.Ui.Exclamation().Msgf("failed to check for updates for %s, %w", cmd.From, err)
+			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates for %s", cmd.From)
 		}
 		destinationUpdates, latestTo, err := checkForUpdates(c.GetProvider(cmd.To), c.Retriever)
 		if err != nil {
-			c.Ui.Exclamation().Msgf("failed to check for updates for %s, %w", cmd.To, err)
+			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates for %s", cmd.To)
 		}
 
 		if sourceUpdates {

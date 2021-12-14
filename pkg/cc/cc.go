@@ -36,12 +36,13 @@ func (ctx *CC) SetLogger(w io.Writer) {
 
 func New() *CC {
 	writter := os.Stdout
+	errorWritter := os.Stderr
 
 	cfg := logger.Config{}
 
 	cfg.LogLevelParsed = getLogLevel()
 
-	log, _ := logger.NewLogger(writter, &cfg)
+	log, _ := logger.NewLogger(writter, errorWritter, &cfg)
 
 	ui := clui.NewUIWithOutput(writter)
 
@@ -110,7 +111,7 @@ func (c *CC) LoadConfig(path string) error {
 	c.Config = cfg
 
 	if cfg.Logging != nil && c.Log.GetLevel() == zerolog.ErrorLevel {
-		log, err := logger.NewLogger(os.Stdout, cfg.Logging)
+		log, err := logger.NewLogger(os.Stdout, os.Stderr, cfg.Logging)
 		if err != nil {
 			c.Log.Warn().Msgf("failed to load logger from config file '%s'", err.Error())
 		} else {
