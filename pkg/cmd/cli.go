@@ -44,6 +44,10 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 }
 
 func downloadProvider(pluginName string, c *cc.CC) error {
+	pluginsVersions := retriever.PluginVersions(c.Retriever)
+	if pluginsVersions[pluginName] == nil {
+		return fmt.Errorf("unknown plugin name %s was provided", pluginName)
+	}
 	err := c.Retriever.Download(pluginName, "latest")
 	if err != nil {
 		return err
@@ -58,15 +62,15 @@ func downloadProvider(pluginName string, c *cc.CC) error {
 	return nil
 }
 
-func checkForUpdates(provider provider.Provider, store retriever.Retriever) (bool, error) {
+func checkForUpdates(provider provider.Provider, store retriever.Retriever) (bool, string, error) {
 	client, err := provider.PluginClient()
 	if err != nil {
-		return false, errors.New("can't get client")
+		return false, "", errors.New("can't get client")
 	}
 	req := &idpplugin.InfoRequest{}
 	resp, err := client.Info(context.Background(), req)
 	if err != nil {
-		return false, errors.New("can't get version")
+		return false, "", errors.New("can't get version")
 	}
 
 	pluginsVersions := retriever.PluginVersions(store)
@@ -74,20 +78,20 @@ func checkForUpdates(provider provider.Provider, store retriever.Retriever) (boo
 		pluginsVersions[provider.GetName()][retriever.IdpMajVersion()]
 
 	presentVers := strings.Split(resp.Build.Version, ".")
-	latestVers := strings.Split(availableVersions[len(availableVersions)-1], ".")
+	latestVers := strings.Split(availableVersions[0], ".")
 
 	for index, ver := range presentVers {
 		intVer, err := strconv.Atoi(ver)
 		if err != nil {
-			return false, err
+			return false, "", err
 		}
 		intLatestPart, err := strconv.Atoi(latestVers[index])
 		if err != nil {
-			return false, err
+			return false, "", err
 		}
 		if intLatestPart > intVer {
-			return true, nil
+			return true, strings.Join(latestVers, "."), nil
 		}
 	}
-	return false, nil
+	return false, "", nil
 }

@@ -25,13 +25,13 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 	}
 
 	if !cmd.NoUpdateCheck && c.ProviderExists(cmd.From) {
-		sourceUpdates, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
+		sourceUpdates, latest, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
 		if err != nil {
 			c.Ui.Exclamation().Msgf("Failed to check for updates for %s, %w", cmd.From, err)
 		}
 
 		if sourceUpdates {
-			c.Ui.Exclamation().Msgf("A new version of the plugin %s is available", cmd.From)
+			c.Ui.Exclamation().Msgf("A new version %s of the plugin %s is available", latest, cmd.From)
 		}
 	}
 

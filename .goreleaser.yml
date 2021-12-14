@@ -24,7 +24,6 @@ builds:
       - -X github.com/aserto-dev/aserto-idp/pkg/version.commit={{.ShortCommit}}
       - -X github.com/aserto-dev/aserto-idp/pkg/version.date={{.Date}}
     mod_timestamp: "{{ .CommitTimestamp }}"
-    no_unique_dist_dir: true
 
 archives:
   - format: zip

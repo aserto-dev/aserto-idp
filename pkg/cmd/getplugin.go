@@ -20,12 +20,14 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 
 	if cmd.Version == "" {
 		cmd.Version = "latest"
-		c.Log.Warn().Msg("no version was provided; downloading latest...")
+		c.Ui.Exclamation().Msg("no version was provided; downloading latest...")
 	}
 
 	err := c.Retriever.Download(cmd.Name, cmd.Version)
 	if err != nil {
 		return err
 	}
+
+	c.Ui.Normal().Msgf("Plugin %s %s was successfully downloaded", cmd.Name, cmd.Version)
 	return nil
 }

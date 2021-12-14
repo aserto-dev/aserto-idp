@@ -25,11 +25,18 @@ type GhcrRetriever struct {
 	Store               *content.OCIStore
 	RemoteStoreLocation string
 	LocalStoreLocation  string
+	extension           string
 }
 
 func NewGhcrRetriever() *GhcrRetriever {
+	opSys := runtime.GOOS
+	ext := ""
+	if opSys == "windows" {
+		ext = ".exe"
+	}
 	return &GhcrRetriever{
-		RemoteStoreLocation: fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s", runtime.GOOS, runtime.GOARCH),
+		extension:           ext,
+		RemoteStoreLocation: fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s", opSys, runtime.GOARCH),
 	}
 }
 
@@ -106,8 +113,8 @@ func (o *GhcrRetriever) Download(pluginName string, version string) error {
 	}
 
 	vers := strings.Split(version, ".")
-	if vers[1] != IdpMajVersion() {
-		return errors.New("incompatible version wa provided for download; abort...")
+	if vers[0] != IdpMajVersion() {
+		return errors.New("incompatible version was provided for download; abort...")
 	}
 
 	ref := fmt.Sprintf("%s:%s-%s", o.RemoteStoreLocation, pluginName, version)
@@ -117,7 +124,7 @@ func (o *GhcrRetriever) Download(pluginName string, version string) error {
 	}
 
 	dest := strings.ReplaceAll(o.LocalStoreLocation, "ociStore", "")
-	destFilePath := filepath.Join(dest, x.PluginPrefix+pluginName)
+	destFilePath := filepath.Join(dest, x.PluginPrefix+pluginName+o.extension)
 	err = o.save(ref, destFilePath)
 	if err != nil {
 		return err

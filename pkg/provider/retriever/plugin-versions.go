@@ -2,9 +2,12 @@ package retriever
 
 import (
 	"regexp"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/aserto-dev/aserto-idp/pkg/version"
+	versioning "github.com/hashicorp/go-version"
 )
 
 var once sync.Once
@@ -22,6 +25,7 @@ func PluginVersions(source Retriever) PluginsInfoSingleton {
 		if err == nil {
 			instance = make(PluginsInfoSingleton)
 			ExtractInfo(content, instance)
+			sortVersions(instance)
 		}
 	})
 
@@ -39,7 +43,7 @@ func ExtractInfo(versions []string, singl PluginsInfoSingleton) {
 
 		name := mat[0][0 : len(mat[0])-1]
 
-		reVersion := regexp.MustCompile("[0-9]+.[0-9]+.[0-9]+")
+		reVersion := regexp.MustCompile(`([0-9]+\.)([0-9]+\.)([0-9]+)`)
 		mat = reVersion.FindStringSubmatch(version)
 
 		if len(mat) == 0 {
@@ -48,14 +52,8 @@ func ExtractInfo(versions []string, singl PluginsInfoSingleton) {
 
 		version := mat[0]
 
-		reMajor := regexp.MustCompile(".[0-9]+.")
-		mat = reMajor.FindStringSubmatch(version)
-
-		if len(mat) == 0 {
-			continue
-		}
-
-		major := mat[0][1 : len(mat[0])-1]
+		reMajor := strings.Split(version, ".")
+		major := reMajor[0]
 
 		populateVersions(name, major, version, singl)
 	}
@@ -86,20 +84,43 @@ func Unique(slice []string) []string {
 	return uniqSlice
 }
 
+func sortVersions(versions PluginsInfoSingleton) {
+	for _, majVers := range versions {
+		for _, vers := range majVers {
+			length := len(vers)
+			var objectVers []*versioning.Version
+			for _, ver := range vers {
+				v, err := versioning.NewVersion(ver)
+				if err != nil {
+					break
+				}
+				objectVers = append(objectVers, v)
+			}
+			if length != len(objectVers) {
+				continue
+			}
+
+			sort.Slice(objectVers, func(i, j int) bool {
+				return objectVers[i].GreaterThan(objectVers[j])
+			})
+
+			for index, ver := range objectVers {
+				vers[index] = ver.String()
+			}
+		}
+
+	}
+}
+
 func IdpMajVersion() string {
 	cliVer := version.GetVer()
-	reMajor := regexp.MustCompile(".[0-9]+.")
-	match := reMajor.FindStringSubmatch(cliVer)
+	vers := strings.Split(cliVer, ".")
 
-	return match[0][1 : len(match[0])-1]
+	return strings.ReplaceAll(vers[0], "v", "")
 }
 
 func LatestVersion(plugin string, source Retriever) string {
-	cliVer := version.GetVer()
-	reMajor := regexp.MustCompile(".[0-9]+.")
-	match := reMajor.FindStringSubmatch(cliVer)
-
-	cliMajor := match[0][1 : len(match[0])-1]
+	cliMajor := IdpMajVersion()
 
 	pluginInfo := PluginVersions(source)
 
@@ -109,5 +130,5 @@ func LatestVersion(plugin string, source Retriever) string {
 		return ""
 	}
 
-	return availableVersions[len(availableVersions)-1]
+	return availableVersions[0]
 }
