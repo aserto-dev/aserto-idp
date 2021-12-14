@@ -16,9 +16,9 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 		idpMajVersion := retriever.IdpMajVersion()
 		pluginVersions := retriever.PluginVersions(c.Retriever)
 		for plugin, majV := range pluginVersions {
-			c.Ui.Normal().Msgf("Plugin %s", plugin)
 			for maj, versions := range majV {
 				if maj == idpMajVersion {
+					c.Ui.Normal().Msgf("Plugin %s", plugin)
 					for _, version := range versions {
 						c.Ui.Normal().Msgf("%s", version)
 					}

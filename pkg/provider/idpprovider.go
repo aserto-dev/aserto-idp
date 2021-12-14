@@ -3,6 +3,7 @@ package provider
 import (
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/aserto-dev/aserto-idp/pkg/x"
@@ -75,5 +76,9 @@ func (idpProvider *IDPProvider) GetPath() string {
 
 func providerName(path string) string {
 	file := filepath.Base(path)
-	return strings.TrimPrefix(file, x.PluginPrefix)
+	name := strings.TrimPrefix(file, x.PluginPrefix)
+	if runtime.GOOS == "windows" {
+		name = strings.TrimSuffix(name, ".exe")
+	}
+	return name
 }
