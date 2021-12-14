@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/version"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/pkg/errors"
 )
 
 type CLI struct {
@@ -65,12 +65,12 @@ func downloadProvider(pluginName string, c *cc.CC) error {
 func checkForUpdates(provider provider.Provider, store retriever.Retriever) (bool, string, error) {
 	client, err := provider.PluginClient()
 	if err != nil {
-		return false, "", errors.New("can't get client")
+		return false, "", errors.Wrap(err, "can't get client")
 	}
 	req := &idpplugin.InfoRequest{}
 	resp, err := client.Info(context.Background(), req)
 	if err != nil {
-		return false, "", errors.New("can't get version")
+		return false, "", errors.Wrap(err, "can't get version")
 	}
 
 	pluginsVersions := retriever.PluginVersions(store)

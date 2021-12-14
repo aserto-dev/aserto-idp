@@ -86,7 +86,6 @@ func (c *CC) GetProvider(name string) provider.Provider {
 
 // Dispose all the resources. This can be called any number of times
 func (c *CC) Dispose() {
-	c.Retriever.Disconnect()
 	for _, provider := range c.providers {
 		provider.Kill()
 	}

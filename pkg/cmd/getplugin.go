@@ -31,6 +31,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		c.Ui.Exclamation().Msg("no version was provided; downloading latest...")
 	}
 
+	c.Dispose()
 	err := c.Retriever.Download(info[0], version)
 	if err != nil {
 		return err

@@ -36,6 +36,7 @@ func appStart(c *cc.CC) error {
 
 	defer func() {
 		c.Dispose()
+		c.Retriever.Disconnect()
 	}()
 
 	options := []kong.Option{
@@ -60,10 +61,6 @@ func appStart(c *cc.CC) error {
 		kong.Vars{"defaultEnv": x.DefaultEnv},
 	}
 
-	if err != nil {
-		return err
-	}
-
 	for _, pluginPath := range pluginPaths {
 		idpProvider := provider.NewIDPProvider(c.Log, pluginPath)
 
@@ -86,7 +83,6 @@ func appStart(c *cc.CC) error {
 		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
 
 	}
-
 	ctx := kong.Parse(&cli, options...)
 
 	err = c.LoadConfig(strings.TrimSpace(cli.Config))
