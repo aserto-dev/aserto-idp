@@ -99,7 +99,7 @@ func (o *GhcrRetriever) List() ([]string, error) {
 
 func (o *GhcrRetriever) Download(pluginName string, version string) error {
 
-	if version == "latest" {
+	if version == "latest" || version == "" {
 		latestVersion := LatestVersion(pluginName, o)
 		if latestVersion == "" {
 			return fmt.Errorf("couldn't find latest version for %s", pluginName)
@@ -196,6 +196,13 @@ func (o *GhcrRetriever) save(ref, outputFile string) error {
 		}
 	}()
 
+	_, err = os.Stat(outputFile)
+	if err == nil {
+		er := os.Remove(outputFile)
+		if er != nil {
+			return errors.Wrap(err, "failed to remove old binary file")
+		}
+	}
 	out, err := os.Create(outputFile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create output file [%s]", outputFile)
