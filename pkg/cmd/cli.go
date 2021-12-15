@@ -43,11 +43,17 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 }
 
 func downloadProvider(pluginName string, c *cc.CC) error {
-	pluginsVersions := retriever.PluginVersions(c.Retriever)
+	pluginsVersions := c.GetRemotePluginsInfo()
 	if pluginsVersions[pluginName] == nil {
 		return fmt.Errorf("plugin '%s' does not exists", pluginName)
 	}
-	err := c.Retriever.Download(pluginName, "latest")
+
+	latestVersion := c.GetLatestVersion(pluginName)
+	if latestVersion == "" {
+		return fmt.Errorf("couldn't find latest version for %s", pluginName)
+	}
+
+	err := c.Retriever.Download(pluginName, latestVersion)
 	if err != nil {
 		return err
 	}
@@ -72,7 +78,7 @@ func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error)
 		return false, "", errors.Wrap(err, "failed to get plugin info")
 	}
 
-	pluginsVersions := retriever.PluginVersions(c.Retriever)
+	pluginsVersions := c.GetRemotePluginsInfo()
 	availableVersions :=
 		pluginsVersions[provider.GetName()][retriever.IdpMajVersion()]
 

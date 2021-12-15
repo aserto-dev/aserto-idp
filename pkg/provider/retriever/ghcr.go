@@ -98,16 +98,6 @@ func (o *GhcrRetriever) List() ([]string, error) {
 }
 
 func (o *GhcrRetriever) Download(pluginName string, version string) error {
-
-	if version == "latest" || version == "" {
-		latestVersion := LatestVersion(pluginName, o)
-		if latestVersion == "" {
-			return fmt.Errorf("couldn't find latest version for %s", pluginName)
-		}
-
-		version = latestVersion
-	}
-
 	vers := strings.Split(version, ".")
 	if vers[0] != IdpMajVersion() {
 		return errors.New("incompatible version was provided for download; abort...")

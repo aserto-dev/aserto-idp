@@ -22,12 +22,13 @@ import (
 // CC contains dependencies that are cross cutting and are needed in most
 // of the providers that make up this application
 type CC struct {
-	Context   context.Context
-	Config    *config.Config
-	Log       *zerolog.Logger
-	Ui        *clui.UI
-	Retriever retriever.Retriever
-	providers map[string]provider.Provider
+	Context     context.Context
+	Config      *config.Config
+	Log         *zerolog.Logger
+	Ui          *clui.UI
+	Retriever   retriever.Retriever
+	pluginsInfo *retriever.PluginsInfo
+	providers   map[string]provider.Provider
 }
 
 func (ctx *CC) SetLogger(w io.Writer) {
@@ -48,15 +49,26 @@ func New() *CC {
 
 	ghcr := retriever.NewGhcrRetriever()
 
+	pi := retriever.NewPluginsInfo(ghcr)
+
 	ctx := CC{
-		Context:   context.Background(),
-		Config:    &config.Config{},
-		Log:       log,
-		Ui:        ui,
-		Retriever: ghcr,
-		providers: make(map[string]provider.Provider),
+		Context:     context.Background(),
+		Config:      &config.Config{},
+		Log:         log,
+		Ui:          ui,
+		Retriever:   ghcr,
+		providers:   make(map[string]provider.Provider),
+		pluginsInfo: pi,
 	}
 	return &ctx
+}
+
+func (c *CC) GetLatestVersion(pluginName string) string {
+	return c.pluginsInfo.LatestVersion(pluginName)
+}
+
+func (c *CC) GetRemotePluginsInfo() map[string]map[string][]string {
+	return c.pluginsInfo.Info
 }
 
 // ProviderExists returns true if the provider has already been added to the context

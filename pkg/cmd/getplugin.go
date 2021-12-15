@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
-	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
 	"github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
 )
 
@@ -26,7 +26,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		return errors.New("plugin is invalid. It must have the following format 'plugin-name:version'")
 	}
 
-	latest := retriever.LatestVersion(info[0], c.Retriever)
+	latest := c.GetLatestVersion(info[0])
 	var version string
 
 	if len(info) == 2 {
@@ -37,6 +37,10 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 	} else {
 		c.Ui.Note().Msg("no version was provided; downloading latest...")
 		version = latest
+	}
+
+	if version == "" {
+		return fmt.Errorf("couldn't find latest version for %s", info[0])
 	}
 
 	provider := c.GetProvider(info[0])

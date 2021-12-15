@@ -15,7 +15,7 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 	localPlugins := getLocalPLuginsVersions(c)
 	if cmd.Remote {
 		idpMajVersion := retriever.IdpMajVersion()
-		pluginVersions := retriever.PluginVersions(c.Retriever)
+		pluginVersions := c.GetRemotePluginsInfo()
 		for plugin, majV := range pluginVersions {
 			for maj, versions := range majV {
 				if maj == idpMajVersion {
