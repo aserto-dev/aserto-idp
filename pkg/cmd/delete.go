@@ -21,17 +21,17 @@ type DeleteCmd struct {
 func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 
 	if cmd.From == "" {
-		return status.Error(codes.InvalidArgument, "no \"--from\" idp was provided")
+		return status.Error(codes.InvalidArgument, "no '--from' idp was provided")
 	}
 
 	if !cmd.NoUpdateCheck && c.ProviderExists(cmd.From) {
-		sourceUpdates, latest, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
+		sourceUpdates, latest, err := checkForUpdates(c.GetProvider(cmd.From), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("Failed to check for updates for %s", cmd.From)
+			c.Ui.Exclamation().WithErr(err).Msgf("Failed to check for updates for plugin '%s'", cmd.From)
 		}
 
 		if sourceUpdates {
-			c.Ui.Exclamation().Msgf("A new version %s of the plugin %s is available", latest, cmd.From)
+			c.Ui.Exclamation().Msgf("A new version '%s' of the plugin '%s' is available", latest, cmd.From)
 		}
 	}
 

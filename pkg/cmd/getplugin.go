@@ -9,26 +9,26 @@ import (
 )
 
 type GetPluginCmd struct {
-	Name string `short:"n" help:"The idp plugin name and version you want to download. Eg: aserto:x.y.z"`
+	Plugin string `arg:"" short:"n" help:"The idp plugin name and version you want to download. Eg: aserto:x.y.z"`
 }
 
 func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 
-	if cmd.Name == "" {
+	if cmd.Plugin == "" {
 		return errors.New("no plugin name was provided")
 	}
 
-	info := strings.Split(cmd.Name, ":")
+	info := strings.Split(cmd.Plugin, ":")
 	version := "latest"
 
 	if len(info) > 2 {
-		return errors.New("please provide plugin to download as: plugin-name:version")
+		return errors.New("plugin is invalid. It must have the following format 'plugin-name:version'")
 	}
 
 	if len(info) == 2 {
 		version = info[1]
 	} else {
-		c.Ui.Exclamation().Msg("no version was provided; downloading latest...")
+		c.Ui.Note().Msg("no version was provided; downloading latest...")
 	}
 
 	c.Dispose()
@@ -37,6 +37,6 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		return err
 	}
 
-	c.Ui.Normal().Msgf("Plugin %s %s was successfully downloaded", info[0], version)
+	c.Ui.Normal().Msgf("Plugin '%s' '%s' was successfully downloaded", info[0], version)
 	return nil
 }

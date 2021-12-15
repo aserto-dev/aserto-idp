@@ -156,7 +156,7 @@ func (o *GhcrRetriever) pull(ref string) error {
 	}
 	_, descriptors, err := oras.Pull(context.Background(), resolver, ref, o.Store, opts...)
 	if err != nil {
-		return errors.Wrapf(err, "download for %s failed", ref)
+		return errors.Wrapf(err, "download for '%s' failed", ref)
 	}
 
 	if len(descriptors) != 1 {

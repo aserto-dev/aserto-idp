@@ -33,18 +33,24 @@ func PluginVersions(source Retriever) PluginsInfoSingleton {
 }
 
 func ExtractInfo(versions []string, singl PluginsInfoSingleton) {
+	nameRegex, err := regexp.Compile("([a-z0-9]+)-")
+	if err != nil {
+		return
+	}
+	versionRegex, err := regexp.Compile(`([0-9]+\.)([0-9]+\.)([0-9]+)`)
+	if err != nil {
+		return
+	}
 
 	for _, version := range versions {
-		re := regexp.MustCompile("([a-z0-9]+)-")
-		mat := re.FindStringSubmatch(version)
+		mat := nameRegex.FindStringSubmatch(version)
 		if len(mat) == 0 {
 			continue
 		}
 
 		name := mat[0][0 : len(mat[0])-1]
 
-		reVersion := regexp.MustCompile(`([0-9]+\.)([0-9]+\.)([0-9]+)`)
-		mat = reVersion.FindStringSubmatch(version)
+		mat = versionRegex.FindStringSubmatch(version)
 
 		if len(mat) == 0 {
 			continue

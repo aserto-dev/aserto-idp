@@ -132,13 +132,13 @@ func (c *CC) LoadProviders() error {
 		idpProvider := provider.NewIDPProvider(c.Log, pluginPath)
 
 		if c.ProviderExists(idpProvider.GetName()) {
-			log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), idpProvider.GetPath(), pluginPath)
+			c.Log.Printf("Plugin %s has already been loaded from %s. Ignoring %s", idpProvider.GetName(), idpProvider.GetPath(), pluginPath)
 			continue
 		}
 
 		err = c.AddProvider(idpProvider)
 		if err != nil {
-			log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
+			c.Log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
 			continue
 		}
 

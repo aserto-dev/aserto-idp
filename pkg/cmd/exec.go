@@ -22,28 +22,28 @@ type ExecCmd struct {
 func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 
 	if cmd.From == "" {
-		return status.Error(codes.InvalidArgument, "no \"--from\" idp was provided")
+		return status.Error(codes.InvalidArgument, "no '--from' idp was provided")
 	}
 
 	if cmd.To == "" {
-		return status.Error(codes.InvalidArgument, "no \"--to\" idp was provided")
+		return status.Error(codes.InvalidArgument, "no '--to' idp was provided")
 	}
 
 	if c.ProviderExists(cmd.From) && c.ProviderExists(cmd.To) && !cmd.NoUpdateCheck {
-		sourceUpdates, latestFrom, err := checkForUpdates(c.GetProvider(cmd.From), c.Retriever)
+		sourceUpdates, latestFrom, err := checkForUpdates(c.GetProvider(cmd.From), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates for %s", cmd.From)
+			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.From)
 		}
-		destinationUpdates, latestTo, err := checkForUpdates(c.GetProvider(cmd.To), c.Retriever)
+		destinationUpdates, latestTo, err := checkForUpdates(c.GetProvider(cmd.To), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates for %s", cmd.To)
+			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.To)
 		}
 
 		if sourceUpdates {
-			c.Ui.Exclamation().Msgf("a new version %s of the plugin %s is available", latestFrom, cmd.From)
+			c.Ui.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestFrom, cmd.From)
 		}
 		if destinationUpdates {
-			c.Ui.Exclamation().Msgf("a new version %s of the plugin %s is available", latestTo, cmd.To)
+			c.Ui.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestTo, cmd.To)
 		}
 	}
 

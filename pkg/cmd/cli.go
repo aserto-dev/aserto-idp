@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -46,7 +45,7 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 func downloadProvider(pluginName string, c *cc.CC) error {
 	pluginsVersions := retriever.PluginVersions(c.Retriever)
 	if pluginsVersions[pluginName] == nil {
-		return fmt.Errorf("unknown plugin name %s was provided", pluginName)
+		return fmt.Errorf("plugin '%s' does not exists", pluginName)
 	}
 	err := c.Retriever.Download(pluginName, "latest")
 	if err != nil {
@@ -62,25 +61,25 @@ func downloadProvider(pluginName string, c *cc.CC) error {
 	return nil
 }
 
-func checkForUpdates(provider provider.Provider, store retriever.Retriever) (bool, string, error) {
+func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error) {
 	client, err := provider.PluginClient()
 	if err != nil {
-		return false, "", errors.Wrap(err, "can't get client")
+		return false, "", errors.Wrap(err, "failed to get plugin client")
 	}
 	req := &idpplugin.InfoRequest{}
-	resp, err := client.Info(context.Background(), req)
+	resp, err := client.Info(c.Context, req)
 	if err != nil {
-		return false, "", errors.Wrap(err, "can't get version")
+		return false, "", errors.Wrap(err, "failed to get plugin info")
 	}
 
-	pluginsVersions := retriever.PluginVersions(store)
+	pluginsVersions := retriever.PluginVersions(c.Retriever)
 	availableVersions :=
 		pluginsVersions[provider.GetName()][retriever.IdpMajVersion()]
 
-	presentVers := strings.Split(resp.Build.Version, ".")
+	currentVers := strings.Split(resp.Build.Version, ".")
 	latestVers := strings.Split(availableVersions[0], ".")
 
-	for index, ver := range presentVers {
+	for index, ver := range currentVers {
 		intVer, err := strconv.Atoi(ver)
 		if err != nil {
 			return false, "", err

@@ -34,13 +34,13 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 		for name, provider := range providers {
 			client, err := provider.PluginClient()
 			if err != nil {
-				c.Log.Debug().Msgf("can't get client for %s", name)
+				c.Log.Debug().Msgf("failed to get client for plugin '%s'", name)
 				continue
 			}
 			req := &idpplugin.InfoRequest{}
 			resp, err := client.Info(c.Context, req)
 			if err != nil {
-				c.Log.Debug().Msgf("can't get version for %s", name)
+				c.Log.Debug().Msgf("failed to retrieve info on plugin '%s'", name)
 				continue
 			}
 			c.Ui.Normal().Msgf("Plugin %s", name)
