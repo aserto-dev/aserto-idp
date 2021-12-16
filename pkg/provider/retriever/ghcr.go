@@ -21,6 +21,8 @@ import (
 	"oras.land/oras-go/pkg/oras"
 )
 
+var defaultRepoAddress = "ghcr.io/aserto-dev"
+
 type GhcrRetriever struct {
 	Store               *content.OCIStore
 	RemoteStoreLocation string
@@ -34,9 +36,13 @@ func NewGhcrRetriever() *GhcrRetriever {
 	if opSys == "windows" {
 		ext = ".exe"
 	}
+	repoAdrress := os.Getenv("IDP_PLUGIN_REPO_ADDRESS")
+	if repoAdrress == "" {
+		repoAdrress = defaultRepoAddress
+	}
 	return &GhcrRetriever{
 		extension:           ext,
-		RemoteStoreLocation: fmt.Sprintf("ghcr.io/aserto-dev/aserto-idp-plugins_%s_%s", opSys, runtime.GOARCH),
+		RemoteStoreLocation: fmt.Sprintf("%s/aserto-idp-plugins_%s_%s", repoAdrress, opSys, runtime.GOARCH),
 	}
 }
 
