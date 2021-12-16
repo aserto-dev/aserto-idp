@@ -5,6 +5,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
 	"github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/pkg/errors"
 )
 
 type ListPluginsCmd struct {
@@ -15,7 +16,10 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 	localPlugins := getLocalPLuginsVersions(c)
 	if cmd.Remote {
 		idpMajVersion := retriever.IdpMajVersion()
-		pluginVersions := c.GetRemotePluginsInfo()
+		pluginVersions, err := c.GetRemotePluginsInfo()
+		if err != nil {
+			return errors.Wrap(err, "failed to retrieve remote information")
+		}
 		for plugin, majV := range pluginVersions {
 			for maj, versions := range majV {
 				if maj == idpMajVersion {

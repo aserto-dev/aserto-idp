@@ -8,7 +8,6 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
-	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
 	"github.com/aserto-dev/aserto-idp/pkg/version"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
 	"github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
@@ -43,17 +42,23 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 }
 
 func downloadProvider(pluginName string, c *cc.CC) error {
-	pluginsVersions := c.GetRemotePluginsInfo()
+	pluginsVersions, err := c.GetRemotePluginsInfo()
+	if err != nil {
+		errors.New("failed to get remote information")
+	}
 	if pluginsVersions[pluginName] == nil {
 		return fmt.Errorf("plugin '%s' does not exists", pluginName)
 	}
 
-	latestVersion := c.GetLatestVersion(pluginName)
+	latestVersion, err := c.GetLatestVersion(pluginName)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get versions for '%s'", pluginName)
+	}
 	if latestVersion == "" {
-		return fmt.Errorf("couldn't find latest version for %s", pluginName)
+		return fmt.Errorf("couldn't find latest version for '%s'", pluginName)
 	}
 
-	err := c.Retriever.Download(pluginName, latestVersion)
+	err = c.Retriever.Download(pluginName, latestVersion)
 	if err != nil {
 		return err
 	}
@@ -78,12 +83,16 @@ func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error)
 		return false, "", errors.Wrap(err, "failed to get plugin info")
 	}
 
-	pluginsVersions := c.GetRemotePluginsInfo()
-	availableVersions :=
-		pluginsVersions[provider.GetName()][retriever.IdpMajVersion()]
+	latest, err := c.GetLatestVersion(provider.GetName())
+	if err != nil {
+		return false, "", errors.Wrap(err, "failed to get remote information about plugins")
+	}
+	if latest == "" {
+		return false, "", err
+	}
 
 	currentVers := strings.Split(resp.Build.Version, ".")
-	latestVers := strings.Split(availableVersions[0], ".")
+	latestVers := strings.Split(latest, ".")
 
 	for index, ver := range currentVers {
 		intVer, err := strconv.Atoi(ver)

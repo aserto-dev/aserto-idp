@@ -63,12 +63,12 @@ func New() *CC {
 	return &ctx
 }
 
-func (c *CC) GetLatestVersion(pluginName string) string {
+func (c *CC) GetLatestVersion(pluginName string) (string, error) {
 	return c.pluginsInfo.LatestVersion(pluginName)
 }
 
-func (c *CC) GetRemotePluginsInfo() map[string]map[string][]string {
-	return c.pluginsInfo.Info
+func (c *CC) GetRemotePluginsInfo() (map[string]map[string][]string, error) {
+	return c.pluginsInfo.GetInfo()
 }
 
 // ProviderExists returns true if the provider has already been added to the context

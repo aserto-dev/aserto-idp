@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
 	"github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/pkg/errors"
 )
 
 type GetPluginCmd struct {
@@ -26,7 +26,10 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		return errors.New("plugin is invalid. It must have the following format 'plugin-name:version'")
 	}
 
-	latest := c.GetLatestVersion(info[0])
+	latest, err := c.GetLatestVersion(info[0])
+	if err != nil {
+		return errors.Wrapf(err, "failed to get remote information about '%s", info[0])
+	}
 	var version string
 
 	if len(info) == 2 {
@@ -58,7 +61,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		provider.Kill()
 	}
 
-	err := c.Retriever.Download(info[0], version)
+	err = c.Retriever.Download(info[0], version)
 	if err != nil {
 		return err
 	}
