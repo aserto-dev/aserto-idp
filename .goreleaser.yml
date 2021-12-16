@@ -2,7 +2,7 @@ before:
   hooks:
 
 builds:
-  - id: cli
+  - id: aserto-idp
     main: ./cmd/aserto-idp
     binary: aserto-idp
     goos:
@@ -49,6 +49,11 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+blobs:
+  - provider: gs
+    bucket: aserto-idp-cli
+    folder: "aserto-idp-cli/{{ .Major }}/{{ .Version }}"
 
 release:
   github:

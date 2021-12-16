@@ -44,7 +44,7 @@ func (cmd *VersionCmd) Run(c *cc.CC) error {
 func downloadProvider(pluginName string, c *cc.CC) error {
 	pluginsVersions, err := c.GetRemotePluginsInfo()
 	if err != nil {
-		errors.New("failed to get remote information")
+		return errors.New("failed to get remote information")
 	}
 	if pluginsVersions[pluginName] == nil {
 		return fmt.Errorf("plugin '%s' does not exists", pluginName)
