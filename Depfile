@@ -11,4 +11,4 @@ go:
     version: "v1.38.0"
   goreleaser:
     importPath: github.com/goreleaser/goreleaser
-    version: "v0.174.2"
+    version: "v1.1.0"

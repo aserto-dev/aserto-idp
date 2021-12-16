@@ -45,7 +45,6 @@ func TestConfigFromFile(t *testing.T) {
 ---
 logging:
   log_level: trace
-
 plugins:
   json:
     file: user_import.json

@@ -26,7 +26,7 @@ func main() {
 func appStart(c *cc.CC) error {
 	cli := cmd.CLI{}
 
-	envFinder := finder.NewEnvironment()
+	envFinder := finder.NewHomeDir()
 
 	pluginPaths, err := envFinder.Find()
 	if err != nil {
@@ -35,6 +35,7 @@ func appStart(c *cc.CC) error {
 
 	defer func() {
 		c.Dispose()
+		c.Retriever.Disconnect()
 	}()
 
 	options := []kong.Option{
@@ -81,10 +82,15 @@ func appStart(c *cc.CC) error {
 		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
 
 	}
-
 	ctx := kong.Parse(&cli, options...)
 
 	err = c.LoadConfig(strings.TrimSpace(cli.Config))
+	if err != nil {
+		return err
+	}
+
+	//TODO add config option for custom package repo
+	err = c.ConnectRetriever()
 	if err != nil {
 		return err
 	}

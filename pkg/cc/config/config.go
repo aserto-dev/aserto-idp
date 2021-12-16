@@ -6,14 +6,15 @@ import (
 	"strings"
 
 	"github.com/aserto-dev/go-utils/logger"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Logging *logger.Config                    `mapstructure:"logging"`
-	Plugins map[string]map[string]interface{} `mapstructure:"plugins"`
+	Logging *logger.Config                    `json:"logging"`
+	Plugins map[string]map[string]interface{} `json:"plugins"`
 }
 
 // Loads the config from a file.
@@ -47,7 +48,9 @@ func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 	v.AutomaticEnv()
 
 	cfg := new(Config)
-	err = v.UnmarshalExact(cfg)
+	err = v.UnmarshalExact(cfg, func(dc *mapstructure.DecoderConfig) {
+		dc.TagName = "json"
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal config file '%s'", configPath)
 	}

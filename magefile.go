@@ -15,7 +15,7 @@ import (
 
 func init() {
 	// Set go version for docker builds
-	os.Setenv("GO_VERSION", "1.16")
+	os.Setenv("GO_VERSION", "1.17")
 	// Set private repositories
 	os.Setenv("GOPRIVATE", "github.com/aserto-dev")
 }
@@ -51,7 +51,7 @@ func Release() error {
 // BuildAll builds all binaries in ./cmd for
 // all configured operating systems and architectures.
 func BuildAll() error {
-	return common.BuildAll()
+	return common.BuildAllReleaser("--snapshot")
 }
 
 func Deps() {
