@@ -69,7 +69,7 @@ brews:
 
     tap:
       owner: aserto-dev
-      name: aserto-tap
+      name: homebrew-tap
       token: "{{ .Env.ASERTO_TAP }}"
 
     url_template: "https://github.com/aserto-dev/aserto-idp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
