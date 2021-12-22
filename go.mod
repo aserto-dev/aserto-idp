@@ -7,7 +7,7 @@ go 1.17
 require (
 	github.com/alecthomas/kong v0.2.17
 	github.com/aserto-dev/clui v0.1.8
-	github.com/aserto-dev/go-grpc v0.0.26
+	github.com/aserto-dev/go-grpc v0.0.33
 	github.com/aserto-dev/go-utils v0.2.5
 	github.com/aserto-dev/idp-plugin-sdk v0.0.5
 	github.com/aserto-dev/mage-loot v0.4.16
@@ -15,13 +15,13 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/hashicorp/go-plugin v1.4.3
 	github.com/hashicorp/go-version v1.3.0
-	github.com/magefile/mage v1.11.0
+	github.com/magefile/mage v1.12.0
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.23.0
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 	oras.land/oras-go v0.4.0
 )
@@ -35,7 +35,7 @@ require (
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-hclog v0.16.2 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
@@ -72,7 +72,7 @@ require (
 	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20211111162719-482062a4217b // indirect
+	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
