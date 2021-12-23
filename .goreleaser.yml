@@ -73,8 +73,6 @@ brews:
       token: "{{ .Env.ASERTO_TAP }}"
 
     url_template: "https://github.com/aserto-dev/aserto-idp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    download_strategy: CustomGitHubPrivateRepositoryReleaseDownloadStrategy
-    custom_require: "lib/custom_download_strategy"
 
     commit_author:
       name: Aserto Bot

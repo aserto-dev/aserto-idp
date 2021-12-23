@@ -57,7 +57,7 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 		return err
 	}
 
-	err = validatePlugin(providerClient, c, providerConfigs, providerName)
+	err = validatePlugin(providerClient, c, providerConfigs, providerName, proto.OperationType_OPERATION_TYPE_DELETE)
 	if err != nil {
 		return err
 	}

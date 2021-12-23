@@ -83,7 +83,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 		return err
 	}
 
-	err = validatePlugin(sourceProviderClient, c, sourceProviderConfigs, sourceProviderName)
+	err = validatePlugin(sourceProviderClient, c, sourceProviderConfigs, sourceProviderName, proto.OperationType_OPERATION_TYPE_EXPORT)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 		return err
 	}
 
-	err = validatePlugin(destinationProviderClient, c, destinationProviderConfigs, destinationProviderName)
+	err = validatePlugin(destinationProviderClient, c, destinationProviderConfigs, destinationProviderName, proto.OperationType_OPERATION_TYPE_IMPORT)
 	if err != nil {
 		return err
 	}

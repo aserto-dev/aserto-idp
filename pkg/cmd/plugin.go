@@ -125,10 +125,11 @@ func getConfigsForNode(node *kong.Node) map[string]interface{} {
 	return config
 }
 
-func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string) error {
+func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string, opType proto.OperationType) error {
 	c.Ui.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
 	validateReq := &proto.ValidateRequest{
 		Config: config,
+		OpType: opType,
 	}
 
 	_, err := pluginClient.Validate(c.Context, validateReq)
