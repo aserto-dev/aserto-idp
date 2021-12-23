@@ -62,7 +62,20 @@ func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 		}
 	}
 
-	return cfg, nil
+	return trimPluginName(cfg), nil
+}
+
+func trimPluginName(cfg *Config) *Config {
+	newCfg := &Config{Logging: cfg.Logging}
+	newCfg.Plugins = make(map[string]map[string]interface{})
+	for plugin, options := range cfg.Plugins {
+		newCfg.Plugins[plugin] = make(map[string]interface{})
+		for option, value := range options {
+			trimmedOptionName := strings.TrimPrefix(option, plugin+"_")
+			newCfg.Plugins[plugin][trimmedOptionName] = value
+		}
+	}
+	return newCfg
 }
 
 func fileExists(path string) (bool, error) {

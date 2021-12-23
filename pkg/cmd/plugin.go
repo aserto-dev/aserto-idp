@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
@@ -52,13 +53,10 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
 
 	for _, config := range providerInfo.Configs {
-		if flagsMap[config.Name] != "" && flagsMap[config.Name] != plugin.Name {
-			c.Ui.Problem().Msg(fmt.Sprintf("plugins %s and %s share an identical flag named: %s", flagsMap[config.Name], plugin.Name, config.Name))
-			return nil, fmt.Errorf("plugins %s and %s share an identical flag named: %s", flagsMap[config.Name], plugin.Name, config.Name)
-		} else {
-			flagsMap[config.Name] = plugin.Name
-		}
-		plugin.Plugins = append(plugin.Plugins, getFlagStruct(config.Name, config.Description, plugin.Name, config.Type))
+		configName := fmt.Sprintf("%s_%s", plugin.Name, config.Name)
+		flagsMap[configName] = plugin.Name
+
+		plugin.Plugins = append(plugin.Plugins, getFlagStruct(configName, config.Description, plugin.Name, config.Type))
 	}
 
 	plugin.Description = providerInfo.Description
@@ -127,6 +125,13 @@ func getConfigsForNode(node *kong.Node) map[string]interface{} {
 
 func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string, opType proto.OperationType) error {
 	c.Ui.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
+
+	newFields := make(map[string]*structpb.Value)
+	for option, value := range config.Fields {
+		newOptionName := strings.TrimPrefix(option, pluginName+"_")
+		newFields[newOptionName] = value
+	}
+	config.Fields = newFields
 	validateReq := &proto.ValidateRequest{
 		Config: config,
 		OpType: opType,
