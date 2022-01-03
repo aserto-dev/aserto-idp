@@ -19,7 +19,7 @@ func main() {
 	err := appStart(c)
 
 	if err != nil {
-		log.Fatal(err.Error())
+		c.Ui.Problem().Msg(err.Error())
 	}
 }
 
@@ -98,7 +98,6 @@ func appStart(c *cc.CC) error {
 	err = ctx.Run(c)
 
 	if err != nil {
-		c.Ui.Problem().Msg(err.Error())
 		return err
 	}
 
