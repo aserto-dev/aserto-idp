@@ -4,7 +4,7 @@ package x
 
 const (
 	// AppName -- application name
-	AppName = "aserto idp"
+	AppName = "aserto-idp"
 	// AppVersionTag -- version tag
 	AppVersionTag = "INTERNAL RELEASE"
 	// DefaultEnv -- default service environment

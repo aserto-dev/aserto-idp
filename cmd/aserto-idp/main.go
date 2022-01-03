@@ -20,6 +20,7 @@ func main() {
 
 	if err != nil {
 		c.Ui.Problem().Msg(err.Error())
+		os.Exit(1)
 	}
 }
 
