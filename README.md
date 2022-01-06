@@ -1,12 +1,12 @@
-# aserto-idp - the CLI for managins idp plugins
-The aserto-idp CLI is a tool for importing user data from identity providers (idp) to Aserto or to another idp.
+# aserto-idp - the CLI for managing idp plugins
+The aserto-idp CLI is a tool for importing user data from identity providers (idp) to Aserto or another idp.
 
 ---
 ## Installation
 
-`aserto-idp` is available on Linux, macOS and Windows platforms.
+`aserto-idp` is available on Linux, macOS, and Windows platforms.
 
-* Binaries for Linux, Windows and Mac are available as tarballs in the [release](https://github.com/aserto-dev/aserto-idp/releases) page.
+* Binaries for Linux, Windows, and Mac are available as tarballs in the [release](https://github.com/aserto-dev/aserto-idp/releases) page.
 
 * Via Homebrew for macOS or LinuxBrew for Linux
 
@@ -23,7 +23,7 @@ The aserto-idp CLI is a tool for importing user data from identity providers (id
 
 ---
 ## The command line
-At first the help message will look like this:
+At first, the help message will look like this:
 
 ```
 Usage: aserto-idp <command>
@@ -56,7 +56,7 @@ Currently, the available plugins are:
 
 The plugins can be downloaded  in 2 ways: 
 - using the `get-plugin` command 
-- calling the `exec` or `delete` command with the name of a plugin that is not on the system (this will automaticaly download the latest version of that plugin).
+- calling the `exec` or `delete` command with the name of a plugin that is not on the system (this will automatically download the latest version of that plugin).
 
 
 `get-plugin` examples: 
@@ -75,7 +75,7 @@ To download a specific version of a plugin:
 aserto-idp get-plugin aserto:1.0.1
 ```
 
-In order to see the plugins that are downloaded on the system and their version, the `list-plugins` command can be used.
+To see the plugins that are downloaded on the system and their version, the `list-plugins` command can be used.
 
 `list-plugins` examples:
 
@@ -92,7 +92,7 @@ The output will be similar to:
     aserto:0.0.11
 ```
 
-To list plugins and versions that are available remotly and can be downloaded:
+To list plugins and versions that are available remotely and can be downloaded:
 ```
 aserto-idp list-plugins --remote
 ```
@@ -118,7 +118,7 @@ Available versions for 'aserto'
 *        aserto:0.0.11
          aserto:0.0.10
 ```
-where `*` simbolize the version that is currently on the system.
+where `*` symbolize the version that is currently on the system.
 
 ---
 ## The config
@@ -156,7 +156,7 @@ To import user data from an idp to aserto:
 ```
 aserto-idp exec --from json --to aserto -c PATH_TO_CONFIG
 ```
-Note that if json or aserto plugin are not on the system, using this command, they will be automaticaly downloaded. Also if there is a newer version of either one of the plugins used, the following message will be prompted:
+Note that if json or aserto plugins are not on the system, using this command, they will be automatically downloaded. Also if there is a newer version of either one of the plugins used, the following message will be prompted:
 ```
 A new version '0.0.12' of the plugin 'json' is available
 ```
@@ -178,7 +178,7 @@ aserto-idp delete --from aserto USER_ID
 ---
 ## Plugin development
 
-If you want to develop your own plugin you can check out our example for a dummy plugin [here](https://github.com/aserto-dev/idp-plugin-sdk/tree/main/examples/dummy)
+If you want to develop your plugin you can check out our example for a dummy plugin [here](https://github.com/aserto-dev/idp-plugin-sdk/tree/main/examples/dummy)
 
 ---
  
