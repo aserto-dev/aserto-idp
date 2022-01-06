@@ -17,6 +17,7 @@ type ExecCmd struct {
 	From          string `short:"f" help:"The idp name you want to import from"`
 	To            string `short:"t" help:"The idp name you want to import to"`
 	NoUpdateCheck bool   `short:"n" help:"Don't check for plugins updates"`
+	kong.Plugins
 }
 
 func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {

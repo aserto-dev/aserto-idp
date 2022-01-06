@@ -80,7 +80,8 @@ func appStart(c *cc.CC) error {
 			return err
 		}
 
-		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
+		cli.Delete.Plugins = append(cli.Delete.Plugins, plugin.Plugins...)
+		cli.Exec.Plugins = append(cli.Exec.Plugins, plugin.Plugins...)
 
 	}
 	ctx := kong.Parse(&cli, options...)
