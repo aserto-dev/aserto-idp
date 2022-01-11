@@ -65,14 +65,18 @@ release:
   name_template: "aserto-idp {{.Tag}}"
 
 brews:
-  - name: aserto-idp
+  -
+    name: aserto-idp
 
     tap:
       owner: aserto-dev
-      name: homebrew-tap
+      name: aserto-tap
       token: "{{ .Env.ASERTO_TAP }}"
 
     url_template: "https://github.com/aserto-dev/aserto-idp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    
+    download_strategy: CustomGitHubPrivateRepositoryReleaseDownloadStrategy
+    custom_require: "lib/custom_download_strategy"
 
     commit_author:
       name: Aserto Bot
@@ -80,14 +84,13 @@ brews:
 
     homepage: "https://aserto.com/"
 
-    description: "aserto idp CLI for importing and exporting users to/from IDP providers."
+    description: "Aserto IDP CLI"
 
-    license: "Apache License Version 2.0"
+    license: "Internal Use Only"
 
     skip_upload: false
 
     test: |
       system "#{bin}/aserto-idp version"
-
     install: |
       bin.install "aserto-idp"
