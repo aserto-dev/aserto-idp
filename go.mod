@@ -6,11 +6,11 @@ go 1.17
 
 require (
 	github.com/alecthomas/kong v0.2.17
-	github.com/aserto-dev/clui v0.7.0
-	github.com/aserto-dev/go-grpc v0.7.0
-	github.com/aserto-dev/go-utils v0.7.0
-	github.com/aserto-dev/idp-plugin-sdk v0.7.0
-	github.com/aserto-dev/mage-loot v0.7.0
+	github.com/aserto-dev/clui v0.8.0
+	github.com/aserto-dev/go-grpc v0.8.0
+	github.com/aserto-dev/go-utils v0.8.0
+	github.com/aserto-dev/idp-plugin-sdk v0.8.0
+	github.com/aserto-dev/mage-loot v0.8.0
 	github.com/containerd/containerd v1.5.8
 	github.com/google/go-containerregistry v0.7.0
 	github.com/hashicorp/go-plugin v1.4.3
