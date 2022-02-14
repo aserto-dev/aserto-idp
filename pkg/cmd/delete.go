@@ -14,7 +14,7 @@ import (
 
 type DeleteCmd struct {
 	From          string   `short:"f" help:"The idp provider name you want to delete from"`
-	UserIds       []string `arg:"" name:"user_id" help:"Users to remove." type:"string"`
+	UserIds       []string `arg:"" name:"user-id" help:"Users to remove." type:"string"`
 	NoUpdateCheck bool     `short:"n" help:"Don't check for plugins updates"`
 }
 
