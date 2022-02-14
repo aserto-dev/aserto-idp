@@ -53,7 +53,7 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
 
 	for _, config := range providerInfo.Configs {
-		configName := fmt.Sprintf("%s_%s", plugin.Name, config.Name)
+		configName := fmt.Sprintf("%s-%s", plugin.Name, config.Name)
 		flagsMap[configName] = plugin.Name
 
 		plugin.Plugins = append(plugin.Plugins, getFlagStruct(configName, config.Description, plugin.Name, config.Type))

@@ -91,7 +91,9 @@ func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error)
 		return false, "", err
 	}
 
-	currentVers := strings.Split(resp.Build.Version, ".")
+	currentVersion := strings.TrimPrefix(resp.Build.Version, "v")
+	currentVers := strings.Split(currentVersion, ".")
+
 	latestVers := strings.Split(latest, ".")
 
 	for index, ver := range currentVers {

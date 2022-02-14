@@ -71,7 +71,7 @@ func trimPluginName(cfg *Config) *Config {
 	for plugin, options := range cfg.Plugins {
 		newCfg.Plugins[plugin] = make(map[string]interface{})
 		for option, value := range options {
-			trimmedOptionName := strings.TrimPrefix(option, plugin+"_")
+			trimmedOptionName := strings.TrimPrefix(option, plugin+"-")
 			newCfg.Plugins[plugin][trimmedOptionName] = value
 		}
 	}
