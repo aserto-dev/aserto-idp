@@ -69,15 +69,16 @@ func appStart(c *cc.CC) error {
 			continue
 		}
 
+		plugin, err := cmd.NewPlugin(idpProvider, c)
+		if err != nil {
+			log.Printf("could not create new plugin %s, error: %s", idpProvider.GetName(), err.Error())
+			continue
+		}
+
 		err = c.AddProvider(idpProvider)
 		if err != nil {
 			log.Printf("could not add provider %s, error: %s", idpProvider.GetName(), err.Error())
 			continue
-		}
-
-		plugin, err := cmd.NewPlugin(idpProvider, c)
-		if err != nil {
-			return err
 		}
 
 		cli.Plugins = append(cli.Plugins, plugin.Plugins...)
