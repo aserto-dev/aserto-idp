@@ -3,7 +3,6 @@ package retriever
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +15,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 	"oras.land/oras-go/pkg/content"
 	"oras.land/oras-go/pkg/oras"
 )
@@ -24,7 +22,7 @@ import (
 var defaultRepoAddress = "ghcr.io/aserto-dev"
 
 type GhcrRetriever struct {
-	Store               *content.OCIStore
+	Store               *content.File
 	RemoteStoreLocation string
 	LocalStoreLocation  string
 	extension           string
@@ -53,29 +51,20 @@ func (o *GhcrRetriever) Connect() error {
 		return err
 	}
 
-	o.LocalStoreLocation = filepath.Join(homeDir, ".aserto", "idpplugins", "ociStore")
+	o.LocalStoreLocation = filepath.Join(homeDir, ".aserto", "idpplugins")
 	err = os.MkdirAll(o.LocalStoreLocation, 0777)
 	if err != nil {
 		return err
 	}
 
-	ociStore, err := content.NewOCIStore(o.LocalStoreLocation)
-	if err != nil {
-		return err
-	}
+	file := content.NewFile(o.LocalStoreLocation)
 
-	err = ociStore.LoadIndex()
-	if err != nil {
-		return err
-	}
-
-	o.Store = ociStore
+	o.Store = file
 
 	return nil
 }
 
 func (o *GhcrRetriever) Disconnect() {
-	_ = os.RemoveAll(o.LocalStoreLocation)
 }
 
 func (o *GhcrRetriever) List() ([]string, error) {
@@ -109,17 +98,25 @@ func (o *GhcrRetriever) Download(pluginName, version string) error {
 		return errors.New("incompatible version was provided for download; abort...") //nolint : revive : tbd
 	}
 
+	plgName := x.PluginPrefix + pluginName + o.extension
+	destFilePath := filepath.Join(o.LocalStoreLocation, plgName)
+	_, err := os.Stat(destFilePath)
+	if err == nil {
+		er := os.Remove(destFilePath)
+		if er != nil {
+			return errors.Wrap(err, "failed to remove old binary file")
+		}
+	}
+
 	ref := fmt.Sprintf("%s:%s-%s", o.RemoteStoreLocation, pluginName, version)
-	err := o.pull(ref)
+	err = o.pull(ref)
 	if err != nil {
 		return err
 	}
 
-	dest := strings.ReplaceAll(o.LocalStoreLocation, "ociStore", "")
-	destFilePath := filepath.Join(dest, x.PluginPrefix+pluginName+o.extension)
-	err = o.save(ref, destFilePath)
+	err = os.Chmod(destFilePath, 0777)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to provide rights to output file [%s]", destFilePath)
 	}
 
 	return nil
@@ -145,99 +142,13 @@ func (o *GhcrRetriever) pull(ref string) error {
 	})
 
 	allowedMediaTypes := []string{"application/vnd.unknown.layer.v1+txt", "application/vnd.unknown.config.v1+json"}
-	opts := []oras.PullOpt{
+	opts := []oras.CopyOpt{
 		oras.WithAllowedMediaTypes(allowedMediaTypes),
-		oras.WithCachedMediaTypes(allowedMediaTypes...),
-		oras.WithContentProvideIngester(o.Store),
+		oras.WithAdditionalCachedMediaTypes(allowedMediaTypes...),
 	}
-	_, descriptors, err := oras.Pull(context.Background(), resolver, ref, o.Store, opts...)
+	_, err := oras.Copy(context.Background(), resolver, ref, o.Store, "", opts...)
 	if err != nil {
 		return errors.Wrapf(err, "download for '%s' failed", ref)
-	}
-
-	if len(descriptors) != 1 {
-		return errors.Errorf("unexpected layer count of [%d] from the registry; expected 1", len(descriptors))
-	}
-
-	o.Store.AddReference(ref, descriptors[0])
-	err = o.Store.SaveIndex()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GhcrRetriever) save(ref, outputFile string) error {
-	err := o.Store.LoadIndex()
-	if err != nil {
-		return err
-	}
-
-	refs := o.Store.ListReferences()
-
-	refDescriptor, ok := refs[ref]
-	if !ok {
-		return errors.Errorf("provider [%s] not found in the local store", ref)
-	}
-	reader, err := o.Store.ReaderAt(context.Background(), refDescriptor)
-	if err != nil {
-		return errors.Wrap(err, "failed to open store reader")
-	}
-
-	defer func() {
-		err := reader.Close()
-		if err != nil {
-			log.Err(err)
-		}
-	}()
-
-	_, err = os.Stat(outputFile)
-	if err == nil {
-		er := os.Remove(outputFile)
-		if er != nil {
-			return errors.Wrap(err, "failed to remove old binary file")
-		}
-	}
-	out, err := os.Create(outputFile)
-	if err != nil {
-		return errors.Wrapf(err, "failed to create output file [%s]", outputFile)
-	}
-	err = os.Chmod(outputFile, 0777)
-	if err != nil {
-		return errors.Wrapf(err, "failed to provide rights to output file [%s]", outputFile)
-	}
-
-	defer func() {
-		err := out.Close()
-		if err != nil {
-			log.Err(err)
-		}
-	}()
-
-	chunkSize := 64
-	buf := make([]byte, chunkSize)
-	for i := 0; i < int(reader.Size()); {
-		if chunkSize < int(reader.Size())-i {
-			chunkSize = int(reader.Size()) - i
-			buf = make([]byte, chunkSize)
-		}
-
-		n, err := reader.ReadAt(buf, int64(i))
-		if err != nil && err != io.EOF {
-			return errors.Wrap(err, "failed to read OCI idp binary")
-		}
-
-		_, err = out.Write(buf[:n])
-		if err != nil {
-			return errors.Wrap(err, "failed to write idp binary to file")
-		}
-
-		if err == io.EOF {
-			break
-		}
-
-		i += chunkSize
 	}
 
 	return nil
