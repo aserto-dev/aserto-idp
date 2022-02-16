@@ -11,12 +11,16 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
+	"github.com/aserto-dev/go-utils/logger"
 )
 
 func main() {
-	c := cc.New()
+	c, err := cc.BuildCC(os.Stdout, os.Stderr, os.Stdout, &logger.Config{})
+	if err != nil {
+		log.Fatalf("failed to build application: %s", err.Error())
+	}
 
-	err := appStart(c)
+	err = appStart(c)
 
 	if err != nil {
 		c.UI.Problem().Msg(err.Error())
