@@ -68,7 +68,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : funl
 	}
 
 	sourceProviderName := cmd.From
-	sourceProviderConfigs, err := getPbStructForNode(c.Config.Plugins[sourceProviderName], context.Path[0].Node())
+	sourceProviderConfigs, err := getPbStructForNode(sourceProviderName, c.Config.Plugins[sourceProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : funl
 	}
 
 	destinationProviderName := cmd.To
-	destinationProviderConfigs, err := getPbStructForNode(c.Config.Plugins[destinationProviderName], context.Path[0].Node())
+	destinationProviderConfigs, err := getPbStructForNode(destinationProviderName, c.Config.Plugins[destinationProviderName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}

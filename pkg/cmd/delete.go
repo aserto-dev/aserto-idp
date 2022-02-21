@@ -46,7 +46,7 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : fu
 	}
 
 	providerName := cmd.From
-	providerConfigs, err := getPbStructForNode(c.Config.Plugins[providerName], context.Path[0].Node())
+	providerConfigs, err := getPbStructForNode(providerName, c.Config.Plugins[providerName], context.Path[0].Node())
 	if err != nil {
 		return err
 	}
