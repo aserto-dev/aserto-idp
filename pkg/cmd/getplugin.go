@@ -38,7 +38,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 			version = latest
 		}
 	} else {
-		c.Ui.Note().Msg("no version was provided; downloading latest...")
+		c.UI.Note().Msg("no version was provided; downloading latest...")
 		version = latest
 	}
 
@@ -54,7 +54,7 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 			resp, err := client.Info(c.Context, req)
 
 			if err == nil && resp.Build.Version == version {
-				c.Ui.Note().Msgf("Plugin '%s' is already at '%s'", info[0], version)
+				c.UI.Note().Msgf("Plugin '%s' is already at '%s'", info[0], version)
 				return nil
 			}
 		}
@@ -66,6 +66,6 @@ func (cmd *GetPluginCmd) Run(context *kong.Context, c *cc.CC) error {
 		return err
 	}
 
-	c.Ui.Normal().Msgf("Plugin '%s' '%s' was successfully downloaded", info[0], version)
+	c.UI.Normal().Msgf("Plugin '%s' '%s' was successfully downloaded", info[0], version)
 	return nil
 }

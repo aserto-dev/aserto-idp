@@ -33,12 +33,12 @@ type PluginFlag struct {
 
 var flagsMap = map[string]string{}
 
-func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
+func NewPlugin(prov provider.Provider, c *cc.CC) (*Plugin, error) {
 
 	plugin := Plugin{}
-	plugin.provider = provider
+	plugin.provider = prov
 
-	pluginClient, err := provider.PluginClient()
+	pluginClient, err := prov.PluginClient()
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func NewPlugin(provider provider.Provider, c *cc.CC) (*Plugin, error) {
 		return nil, err
 	}
 
-	plugin.Name = provider.GetName()
+	plugin.Name = prov.GetName()
 
 	c.Log.Info().Msgf("loaded plugin %s - version: %s, commit: %s", plugin.Name, providerInfo.Build.Version, providerInfo.Build.Commit)
 
@@ -77,15 +77,15 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType api.Con
 		switch flagType {
 		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_BOOLEAN:
 			if field.Type == reflect.TypeOf(true) {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
+				field.Tag = reflect.StructTag(fmt.Sprintf("name:%q help:%q group:%q Flags", flagName, flagDescription, groupName))
 			}
 		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_STRING:
 			if field.Type == reflect.TypeOf("string") {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
+				field.Tag = reflect.StructTag(fmt.Sprintf("name:%q help:%q group:%q Flags", flagName, flagDescription, groupName))
 			}
 		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_INTEGER:
 			if field.Type == reflect.TypeOf(0) {
-				field.Tag = reflect.StructTag(fmt.Sprintf(`name:"%s" help:"%s" group:"%s Flags"`, flagName, flagDescription, groupName))
+				field.Tag = reflect.StructTag(fmt.Sprintf("name:%q help:%q group:%q Flags", flagName, flagDescription, groupName))
 			}
 		}
 
@@ -124,7 +124,7 @@ func getConfigsForNode(node *kong.Node) map[string]interface{} {
 }
 
 func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *structpb.Struct, pluginName string, opType proto.OperationType) error {
-	c.Ui.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
+	c.UI.Note().NoNewline().Msgf("Validating connection to %s", pluginName)
 
 	newFields := make(map[string]*structpb.Value)
 	for option, value := range config.Fields {
@@ -140,7 +140,7 @@ func validatePlugin(pluginClient grpcplugin.PluginClient, c *cc.CC, config *stru
 	_, err := pluginClient.Validate(c.Context, validateReq)
 
 	if err == nil {
-		c.Ui.Success().Msg("Connection validated.")
+		c.UI.Success().Msg("Connection validated.")
 	}
 	return err
 }

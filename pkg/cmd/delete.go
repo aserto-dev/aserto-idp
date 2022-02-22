@@ -18,7 +18,7 @@ type DeleteCmd struct {
 	NoUpdateCheck bool     `short:"n" help:"Don't check for plugins updates"`
 }
 
-func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
+func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : funlen // tbd
 
 	if cmd.From == "" {
 		return status.Error(codes.InvalidArgument, "no '--from' idp was provided")
@@ -27,22 +27,21 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 	if !cmd.NoUpdateCheck && c.ProviderExists(cmd.From) {
 		sourceUpdates, latest, err := checkForUpdates(c.GetProvider(cmd.From), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("Failed to check for updates for plugin '%s'", cmd.From)
+			c.UI.Exclamation().WithErr(err).Msgf("Failed to check for updates for plugin '%s'", cmd.From)
 		}
 
 		if sourceUpdates {
-			c.Ui.Exclamation().Msgf("A new version '%s' of the plugin '%s' is available", latest, cmd.From)
+			c.UI.Exclamation().Msgf("A new version '%s' of the plugin '%s' is available", latest, cmd.From)
 		}
 	}
 
 	if !c.ProviderExists(cmd.From) {
 		if cmd.NoUpdateCheck {
 			return status.Error(codes.InvalidArgument, "unavailable \"--from\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
-		} else {
-			err := downloadProvider(cmd.From, c)
-			if err != nil {
-				return err
-			}
+		}
+		err := downloadProvider(cmd.From, c)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -72,7 +71,7 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 	successCount := 0
 	errorCount := 0
 
-	deleteProgress := c.Ui.Progress("Deleting users")
+	deleteProgress := c.UI.Progress("Deleting users")
 
 	deleteProgress.Start()
 
@@ -131,10 +130,10 @@ func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error {
 	<-doneReadErrors
 
 	deleteProgress.Stop()
-	c.Ui.Normal().WithTable("Status", "N° of users").
+	c.UI.Normal().WithTable("Status", "N° of users").
 		WithTableRow("Succeeded", fmt.Sprintf("%d", successCount)).
 		WithTableRow("Errored", fmt.Sprintf("%d", errorCount)).Do()
 
-	c.Ui.Success().Msg("Delete done")
+	c.UI.Success().Msg("Delete done")
 	return nil
 }

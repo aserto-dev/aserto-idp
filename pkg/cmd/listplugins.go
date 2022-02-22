@@ -23,15 +23,15 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 		for plugin, majV := range pluginVersions {
 			for maj, versions := range majV {
 				if maj == idpMajVersion {
-					c.Ui.Normal().NoNewline().Msgf("Available versions for '%s'", plugin)
+					c.UI.Normal().NoNewline().Msgf("Available versions for '%s'", plugin)
 					for _, version := range versions {
 						if version == localPlugins[plugin] {
-							c.Ui.Normal().NoNewline().Msgf("*\t %s:%s", plugin, version)
+							c.UI.Normal().NoNewline().Msgf("*\t %s:%s", plugin, version)
 						} else {
-							c.Ui.Normal().NoNewline().Msgf("\t %s:%s", plugin, version)
+							c.UI.Normal().NoNewline().Msgf("\t %s:%s", plugin, version)
 						}
 					}
-					c.Ui.Normal().Msg("")
+					c.UI.Normal().Msg("")
 				}
 			}
 		}
@@ -39,13 +39,13 @@ func (cmd *ListPluginsCmd) Run(context *kong.Context, c *cc.CC) error {
 	}
 
 	if len(localPlugins) == 0 {
-		c.Ui.Normal().Msg("No local plugins were found")
+		c.UI.Normal().Msg("No local plugins were found")
 		return nil
 	}
 	for name, version := range localPlugins {
-		c.Ui.Normal().NoNewline().Msgf("\t %s:%s", name, version)
+		c.UI.Normal().NoNewline().Msgf("\t %s:%s", name, version)
 	}
-	c.Ui.Normal().Msg("")
+	c.UI.Normal().Msg("")
 
 	return nil
 }

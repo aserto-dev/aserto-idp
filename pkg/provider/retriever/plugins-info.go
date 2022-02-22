@@ -19,14 +19,8 @@ func NewPluginsInfo(source Retriever) *PluginsInfo {
 }
 
 func (pi *PluginsInfo) extractInfo(versions []string) {
-	nameRegex, err := regexp.Compile("([a-z0-9]+)-")
-	if err != nil {
-		return
-	}
-	versionRegex, err := regexp.Compile(`([0-9]+\.)([0-9]+\.)([0-9]+)`)
-	if err != nil {
-		return
-	}
+	nameRegex := regexp.MustCompile("([a-z0-9]+)-")
+	versionRegex := regexp.MustCompile(`(\d+\.)(\d+\.)(\d+)`)
 
 	for _, version := range versions {
 		mat := nameRegex.FindStringSubmatch(version)
@@ -42,22 +36,22 @@ func (pi *PluginsInfo) extractInfo(versions []string) {
 			continue
 		}
 
-		version := mat[0]
+		ver := mat[0]
 
-		reMajor := strings.Split(version, ".")
+		reMajor := strings.Split(ver, ".")
 		major := reMajor[0]
 
-		pi.populateVersions(name, major, version)
+		pi.populateVersions(name, major, ver)
 	}
 }
 
-func (pi *PluginsInfo) populateVersions(pluginName, majorVer, version string) {
+func (pi *PluginsInfo) populateVersions(pluginName, majorVer, ver string) {
 
 	if pi.info[pluginName] == nil {
 		pi.info[pluginName] = make(map[string][]string)
 	}
 
-	pi.info[pluginName][majorVer] = append(pi.info[pluginName][majorVer], version)
+	pi.info[pluginName][majorVer] = append(pi.info[pluginName][majorVer], ver)
 	pi.info[pluginName][majorVer] = Unique(pi.info[pluginName][majorVer])
 }
 
