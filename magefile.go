@@ -1,3 +1,4 @@
+//go:build mage
 // +build mage
 
 package main
@@ -77,5 +78,5 @@ func All() error {
 }
 
 func Run() error {
-	return sh.RunV("./bin/" + runtime.GOOS + "-" + runtime.GOARCH + "/aserto-idp")
+	return sh.RunV("./dist//aserto-idp_" + runtime.GOOS + "_" + runtime.GOARCH + "/aserto-idp")
 }
