@@ -98,8 +98,8 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType api.Con
 	return value
 }
 
-func getPbStructForNode(pluginConfig map[string]interface{}, node *kong.Node) (*structpb.Struct, error) {
-	cliConfigs := getConfigsForNode(node)
+func getPbStructForNode(pluginName string, pluginConfig map[string]interface{}, node *kong.Node) (*structpb.Struct, error) {
+	cliConfigs := getConfigsForNode(pluginName, node)
 
 	for name, value := range pluginConfig {
 		if _, ok := cliConfigs[name]; !ok {
@@ -111,14 +111,18 @@ func getPbStructForNode(pluginConfig map[string]interface{}, node *kong.Node) (*
 	return configStruct, err
 }
 
-func getConfigsForNode(node *kong.Node) map[string]interface{} {
+func getConfigsForNode(pluginName string, node *kong.Node) map[string]interface{} {
 	config := make(map[string]interface{})
 
 	for _, flag := range node.Flags {
-		// CLI flags do not have groups
-		if flag.Group != nil && flag.Value.Target.Interface() != flag.DefaultValue.Interface() {
-			config[flag.Name] = flag.Value.Target.Interface()
+		if flag.Group == nil || flag.Value.Target.Interface() == flag.DefaultValue.Interface() ||
+			!strings.HasPrefix(flag.Name, pluginName) {
+			continue
 		}
+
+		name := strings.TrimPrefix(flag.Name, pluginName+"-")
+		config[name] = flag.Value.Target.Interface()
+
 	}
 	return config
 }
