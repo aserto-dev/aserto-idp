@@ -19,7 +19,7 @@ type ExecCmd struct {
 	NoUpdateCheck bool   `short:"n" help:"Don't check for plugins updates"`
 }
 
-func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
+func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : funlen // tbd
 
 	if cmd.From == "" {
 		return status.Error(codes.InvalidArgument, "no '--from' idp was provided")
@@ -32,40 +32,38 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 	if c.ProviderExists(cmd.From) && c.ProviderExists(cmd.To) && !cmd.NoUpdateCheck {
 		sourceUpdates, latestFrom, err := checkForUpdates(c.GetProvider(cmd.From), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.From)
+			c.UI.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.From)
 		}
 		destinationUpdates, latestTo, err := checkForUpdates(c.GetProvider(cmd.To), c)
 		if err != nil {
-			c.Ui.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.To)
+			c.UI.Exclamation().WithErr(err).Msgf("failed to check for updates on '%s' plugin", cmd.To)
 		}
 
 		if sourceUpdates {
-			c.Ui.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestFrom, cmd.From)
+			c.UI.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestFrom, cmd.From)
 		}
 		if destinationUpdates {
-			c.Ui.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestTo, cmd.To)
+			c.UI.Exclamation().Msgf("a new version '%s' of '%s' plugin is available", latestTo, cmd.To)
 		}
 	}
 
 	if !c.ProviderExists(cmd.From) {
 		if cmd.NoUpdateCheck {
 			return status.Error(codes.InvalidArgument, "unavailable \"--from\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
-		} else {
-			err := downloadProvider(cmd.From, c)
-			if err != nil {
-				return err
-			}
+		}
+		err := downloadProvider(cmd.From, c)
+		if err != nil {
+			return err
 		}
 	}
 
 	if !c.ProviderExists(cmd.To) {
 		if cmd.NoUpdateCheck {
 			return status.Error(codes.InvalidArgument, "unavailable \"--to\" idp was provided, use exec without --no-update-check to download it or use get-plugin command")
-		} else {
-			err := downloadProvider(cmd.To, c)
-			if err != nil {
-				return err
-			}
+		}
+		err := downloadProvider(cmd.To, c)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -121,7 +119,7 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 	successCount := 0
 	errorCount := 0
 
-	importProgress := c.Ui.Progress("Importing users")
+	importProgress := c.UI.Progress("Importing users")
 
 	importProgress.Start()
 
@@ -212,10 +210,10 @@ func (cmd *ExecCmd) Run(context *kong.Context, c *cc.CC) error {
 	<-doneReadErrors
 
 	importProgress.Stop()
-	c.Ui.Normal().WithTable("Status", "N° of users").
+	c.UI.Normal().WithTable("Status", "N° of users").
 		WithTableRow("Succeeded", fmt.Sprintf("%d", successCount)).
 		WithTableRow("Errored", fmt.Sprintf("%d", errorCount)).Do()
 
-	c.Ui.Success().Msg("Import done")
+	c.UI.Success().Msg("Import done")
 	return nil
 }

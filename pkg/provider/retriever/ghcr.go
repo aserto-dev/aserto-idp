@@ -103,10 +103,10 @@ func (o *GhcrRetriever) List() ([]string, error) {
 	return tags, nil
 }
 
-func (o *GhcrRetriever) Download(pluginName string, version string) error {
+func (o *GhcrRetriever) Download(pluginName, version string) error {
 	vers := strings.Split(version, ".")
 	if vers[0] != IdpMajVersion() {
-		return errors.New("incompatible version was provided for download; abort...")
+		return errors.New("incompatible version was provided for download; abort...") //nolint : revive : tbd
 	}
 
 	ref := fmt.Sprintf("%s:%s-%s", o.RemoteStoreLocation, pluginName, version)

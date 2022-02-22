@@ -72,8 +72,8 @@ func downloadProvider(pluginName string, c *cc.CC) error {
 	return nil
 }
 
-func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error) {
-	client, err := provider.PluginClient()
+func checkForUpdates(prov provider.Provider, c *cc.CC) (bool, string, error) {
+	client, err := prov.PluginClient()
 	if err != nil {
 		return false, "", errors.Wrap(err, "failed to get plugin client")
 	}
@@ -83,7 +83,7 @@ func checkForUpdates(provider provider.Provider, c *cc.CC) (bool, string, error)
 		return false, "", errors.Wrap(err, "failed to get plugin info")
 	}
 
-	latest, err := c.GetLatestVersion(provider.GetName())
+	latest, err := c.GetLatestVersion(prov.GetName())
 	if err != nil {
 		return false, "", errors.Wrap(err, "failed to get remote information about plugins")
 	}

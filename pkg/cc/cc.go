@@ -25,13 +25,13 @@ type CC struct {
 	Context     context.Context
 	Config      *config.Config
 	Log         *zerolog.Logger
-	Ui          *clui.UI
+	UI          *clui.UI
 	Retriever   retriever.Retriever
 	pluginsInfo *retriever.PluginsInfo
 	providers   map[string]provider.Provider
 }
 
-func (ctx *CC) SetLogger(w io.Writer) {
+func (c *CC) SetLogger(w io.Writer) {
 	log.SetOutput(w)
 }
 
@@ -43,7 +43,7 @@ func New() *CC {
 
 	cfg.LogLevelParsed = getLogLevel()
 
-	log, _ := logger.NewLogger(writter, errorWritter, &cfg)
+	newLogger, _ := logger.NewLogger(writter, errorWritter, &cfg)
 
 	ui := clui.NewUIWithOutput(writter)
 
@@ -54,8 +54,8 @@ func New() *CC {
 	ctx := CC{
 		Context:     context.Background(),
 		Config:      &config.Config{},
-		Log:         log,
-		Ui:          ui,
+		Log:         newLogger,
+		UI:          ui,
 		Retriever:   ghcr,
 		providers:   make(map[string]provider.Provider),
 		pluginsInfo: pi,
@@ -123,11 +123,11 @@ func (c *CC) LoadConfig(path string) error {
 	c.Config = cfg
 
 	if cfg.Logging != nil && c.Log.GetLevel() == zerolog.ErrorLevel {
-		log, err := logger.NewLogger(os.Stdout, os.Stderr, cfg.Logging)
+		newLogger, err := logger.NewLogger(os.Stdout, os.Stderr, cfg.Logging)
 		if err != nil {
 			c.Log.Warn().Msgf("failed to load logger from config file '%s'", err.Error())
 		} else {
-			c.Log = log
+			c.Log = newLogger
 		}
 	}
 	return nil

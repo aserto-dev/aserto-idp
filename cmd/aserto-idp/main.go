@@ -19,7 +19,7 @@ func main() {
 	err := appStart(c)
 
 	if err != nil {
-		c.Ui.Problem().Msg(err.Error())
+		c.UI.Problem().Msg(err.Error())
 		os.Exit(1)
 	}
 }
@@ -91,7 +91,7 @@ func appStart(c *cc.CC) error {
 		return err
 	}
 
-	//TODO add config option for custom package repo
+	// TODO add config option for custom package repo
 	err = c.ConnectRetriever()
 	if err != nil {
 		return err

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -31,7 +30,7 @@ func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 	}
 
 	if !exists {
-		return nil, errors.New(fmt.Sprintf("Config file %s does not exist", configPath))
+		return nil, errors.Errorf("Config file %s does not exist", configPath)
 	}
 
 	v := viper.New()
