@@ -6,8 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
@@ -35,34 +33,6 @@ func (c *CC) SetLogger(w io.Writer) {
 	log.SetOutput(w)
 }
 
-func New() *CC {
-	writter := os.Stdout
-	errorWritter := os.Stderr
-
-	cfg := logger.Config{}
-
-	cfg.LogLevelParsed = getLogLevel()
-
-	newLogger, _ := logger.NewLogger(writter, errorWritter, &cfg)
-
-	ui := clui.NewUIWithOutput(writter)
-
-	ghcr := retriever.NewGhcrRetriever()
-
-	pi := retriever.NewPluginsInfo(ghcr)
-
-	ctx := CC{
-		Context:     context.Background(),
-		Config:      &config.Config{},
-		Log:         newLogger,
-		UI:          ui,
-		Retriever:   ghcr,
-		providers:   make(map[string]provider.Provider),
-		pluginsInfo: pi,
-	}
-	return &ctx
-}
-
 func (c *CC) GetLatestVersion(pluginName string) (string, error) {
 	return c.pluginsInfo.LatestVersion(pluginName)
 }
@@ -79,6 +49,9 @@ func (c *CC) ProviderExists(name string) bool {
 
 // AddProvider to the context
 func (c *CC) AddProvider(prov provider.Provider) error {
+	if c.providers == nil {
+		c.providers = make(map[string]provider.Provider)
+	}
 	provName := prov.GetName()
 	if c.ProviderExists(provName) {
 		return fmt.Errorf("provider %s has already been added", provName)
@@ -157,41 +130,4 @@ func (c *CC) LoadProviders() error {
 	}
 
 	return nil
-}
-
-func getLogLevel() zerolog.Level {
-	logLevel := zerolog.FatalLevel
-
-	for _, arg := range os.Args {
-		if strings.HasPrefix(strings.ToLower(arg), "--verbosity=") {
-			intLevel, err := strconv.Atoi(strings.Split(arg, "=")[1])
-			if err != nil {
-				break
-			}
-			switch intLevel {
-			case 1:
-				logLevel = zerolog.ErrorLevel
-			case 2:
-				logLevel = zerolog.InfoLevel
-			case 3:
-				logLevel = zerolog.DebugLevel
-			case 4:
-				logLevel = zerolog.TraceLevel
-			}
-
-		}
-		switch arg {
-		case "-v":
-			logLevel = zerolog.ErrorLevel
-		case "-vv":
-			logLevel = zerolog.InfoLevel
-		case "-vvv":
-			logLevel = zerolog.DebugLevel
-		case "-vvvv":
-			logLevel = zerolog.TraceLevel
-		}
-
-	}
-
-	return logLevel
 }

@@ -16,6 +16,10 @@ type Config struct {
 	Plugins map[string]map[string]interface{} `json:"plugins"`
 }
 
+func NewEmptyConfig() *Config {
+	return &Config{}
+}
+
 // Loads the config from a file.
 func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 	if configPath == "" {

@@ -5,6 +5,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/aserto-dev/mage-loot/buf"
@@ -23,7 +24,10 @@ func init() {
 
 // Generate generates all code.
 func Generate() error {
-	return common.Generate()
+	return common.GenerateWith([]string{
+		filepath.Dir(deps.GoBinPath("mockgen")),
+		filepath.Dir(deps.GoBinPath("wire")),
+	})
 }
 
 // TODO: Will be moved to Proto repo
