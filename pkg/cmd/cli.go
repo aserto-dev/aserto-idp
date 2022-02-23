@@ -33,10 +33,9 @@ type VersionCmd struct {
 }
 
 func (cmd *VersionCmd) Run(c *cc.CC) error {
-	fmt.Printf("%s - %s (%s)\n",
+	fmt.Printf("%s - %s\n",
 		x.AppName,
 		version.GetVersionString(),
-		x.AppVersionTag,
 	)
 	return nil
 }

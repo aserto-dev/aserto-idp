@@ -9,6 +9,5 @@ const (
 
 // environments
 const (
-	EnvProduction  string = "prod"
-	EnvEngineering string = "eng"
+	EnvProduction string = "prod"
 )

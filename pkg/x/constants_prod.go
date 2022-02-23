@@ -1,12 +1,8 @@
-// +build prod
-
 package x
 
 const (
 	// AppName -- application name
 	AppName = "aserto idp"
-	// AppVersionTag -- version tag
-	AppVersionTag = ""
 	// DefaultEnv -- default service environment
 	DefaultEnv string = EnvProduction
 )
