@@ -15,7 +15,10 @@ import (
 )
 
 func main() {
-	c, err := cc.BuildCC(os.Stdout, os.Stderr, os.Stdout, &logger.Config{})
+	cfg := &logger.Config{}
+	cfg.LogLevelParsed = cc.GetLogLevel()
+
+	c, err := cc.BuildCC(os.Stdout, os.Stderr, os.Stdout, cfg)
 	if err != nil {
 		log.Fatalf("failed to build application: %s", err.Error())
 	}
