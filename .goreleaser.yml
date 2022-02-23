@@ -70,13 +70,10 @@ brews:
 
     tap:
       owner: aserto-dev
-      name: aserto-tap
+      name: homebrew-tap
       token: "{{ .Env.ASERTO_TAP }}"
 
     url_template: "https://github.com/aserto-dev/aserto-idp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    
-    download_strategy: CustomGitHubPrivateRepositoryReleaseDownloadStrategy
-    custom_require: "lib/custom_download_strategy"
 
     commit_author:
       name: Aserto Bot
@@ -86,7 +83,7 @@ brews:
 
     description: "Aserto IDP CLI"
 
-    license: "Internal Use Only"
+    license: "Apache License Version 2.0"
 
     skip_upload: false
 
