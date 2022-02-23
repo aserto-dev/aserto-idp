@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/aserto-dev/mage-loot/buf"
 	"github.com/aserto-dev/mage-loot/common"
 	"github.com/aserto-dev/mage-loot/deps"
 	"github.com/magefile/mage/mg"
@@ -28,14 +27,6 @@ func Generate() error {
 		filepath.Dir(deps.GoBinPath("mockgen")),
 		filepath.Dir(deps.GoBinPath("wire")),
 	})
-}
-
-// TODO: Will be moved to Proto repo
-func GenerateProto() error {
-	// Build generate
-	return buf.Run(
-		buf.AddArg("generate"),
-	)
 }
 
 // Build builds all binaries in ./cmd.
