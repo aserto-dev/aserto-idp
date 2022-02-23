@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
@@ -130,4 +132,41 @@ func (c *CC) LoadProviders() error {
 	}
 
 	return nil
+}
+
+func GetLogLevel() zerolog.Level {
+	logLevel := zerolog.FatalLevel
+
+	for _, arg := range os.Args {
+		if strings.HasPrefix(strings.ToLower(arg), "--verbosity=") {
+			intLevel, err := strconv.Atoi(strings.Split(arg, "=")[1])
+			if err != nil {
+				break
+			}
+			switch intLevel {
+			case 1:
+				logLevel = zerolog.ErrorLevel
+			case 2:
+				logLevel = zerolog.InfoLevel
+			case 3:
+				logLevel = zerolog.DebugLevel
+			case 4:
+				logLevel = zerolog.TraceLevel
+			}
+
+		}
+		switch arg {
+		case "-v":
+			logLevel = zerolog.ErrorLevel
+		case "-vv":
+			logLevel = zerolog.InfoLevel
+		case "-vvv":
+			logLevel = zerolog.DebugLevel
+		case "-vvvv":
+			logLevel = zerolog.TraceLevel
+		}
+
+	}
+
+	return logLevel
 }
