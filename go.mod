@@ -11,7 +11,7 @@ require (
 	github.com/aserto-dev/go-utils v0.8.2
 	github.com/aserto-dev/idp-plugin-sdk v0.8.1
 	github.com/aserto-dev/mage-loot v0.8.1
-	github.com/containerd/containerd v1.5.9
+	github.com/containerd/containerd v1.5.10
 	github.com/golang/mock v1.6.0
 	github.com/google/go-containerregistry v0.7.0
 	github.com/google/wire v0.5.0
