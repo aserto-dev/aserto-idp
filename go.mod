@@ -11,7 +11,7 @@ require (
 	github.com/aserto-dev/go-utils v0.8.5
 	github.com/aserto-dev/idp-plugin-sdk v0.8.1
 	github.com/aserto-dev/mage-loot v0.8.4
-	github.com/containerd/containerd v1.6.2
+	github.com/containerd/containerd v1.6.6
 	github.com/golang/mock v1.6.0
 	github.com/google/go-containerregistry v0.8.0
 	github.com/google/wire v0.5.0
@@ -73,7 +73,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/open-policy-agent/opa v0.37.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
