@@ -1,0 +1,26 @@
+{
+    "cSpell.words": [
+        "alecthomas",
+        "clui",
+        "Errored",
+        "funlen",
+        "gochecknoglobals",
+        "gomock",
+        "grpcplugin",
+        "hashicorp",
+        "idpplugin",
+        "idpplugins",
+        "ldflag",
+        "mockgen",
+        "Msgf",
+        "nosetting",
+        "protobuf",
+        "stretchr",
+        "structpb",
+        "varargs",
+        "wireinject",
+        "Wrapf",
+        "zeroinstall",
+        "zerolog"
+    ]
+}
