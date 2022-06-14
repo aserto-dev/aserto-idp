@@ -20,7 +20,7 @@ The aserto-idp CLI is a tool for importing user data from identity providers (id
 
   ```shell
   # NOTE: The dev version will be in effect!
-  go get -u github.com/aserto-dev/aserto-idp
+  go install github.com/aserto-dev/aserto-idp/cmd/aserto-idp@v0.8.5
   ```
 
 ---
@@ -98,11 +98,10 @@ aserto-idp list-plugins
 The output will be similar to:
 
 ```
-
-    auth0:v0.0.7
-    json:0.0.11
-    okta:0.0.23
-    aserto:0.0.11
+	 aserto:0.8.5
+	 auth0:0.8.3
+	 json:0.8.4
+	 okta:0.8.8
 ```
 
 To list plugins and versions that are available remotely and can be downloaded:
@@ -114,25 +113,37 @@ aserto-idp list-plugins --remote
 The output will be similar to:
 
 ```
-Available versions for 'okta'
-*        okta:0.0.23
-         okta:0.0.22
-         okta:0.0.21
-         okta:0.0.20
+Available versions for 'aserto'
+*	 aserto:0.8.5
+	 aserto:0.8.4
+	 aserto:0.8.3
+	 aserto:0.8.2
+	 aserto:0.8.1
+	 aserto:0.8.0
 
 Available versions for 'json'
-         json:0.0.12
-*        json:0.0.11
-         json:0.0.10
+*	 json:0.8.4
+	 json:0.8.3
+	 json:0.8.2
+	 json:0.8.1
+	 json:0.8.0
+
+Available versions for 'okta'
+*	 okta:0.8.8
+	 okta:0.8.7
+	 okta:0.8.6
+	 okta:0.8.5
+	 okta:0.8.4
+	 okta:0.8.3
+	 okta:0.8.2
+	 okta:0.8.1
+	 okta:0.8.0
 
 Available versions for 'auth0'
-         auth0:0.0.7
-         auth0:0.0.6
-         auth0:0.0.5
-
-Available versions for 'aserto'
-*        aserto:0.0.11
-         aserto:0.0.10
+*	 auth0:0.8.3
+	 auth0:0.8.2
+	 auth0:0.8.1
+	 auth0:0.8.0
 ```
 
 where `*` symbolize the version that is currently on the system.
@@ -153,6 +164,7 @@ plugins:
     domain: DOMAIN
     client-id: ID
     client-secret: SECRET
+    connection-name: AUTH0_CONNECTION_NAME
   json:
     from-file: PATH_TO_FILE
     to-file: PATH_TO_OUTPUT_FILE
@@ -160,6 +172,7 @@ plugins:
     tenant: TENANT
     authorizer: AUTHORIZER
     api-key: API_KEY
+    insecure: BOOL
   okta:
     domain: OKTA_DOMAIN
     api-token: TOKEN
@@ -184,7 +197,7 @@ aserto-idp exec --from json --to aserto -c PATH_TO_CONFIG
 Note that if json or aserto plugins are not on the system, using this command, they will be automatically downloaded. Also if there is a newer version of either one of the plugins used, the following message will be prompted:
 
 ```
-A new version '0.0.12' of the plugin 'json' is available
+A new version '0.8.4' of the plugin 'json' is available
 ```
 
 To disable updates checking when using `exec` or `delete` :
