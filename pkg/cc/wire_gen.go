@@ -11,8 +11,8 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
+	"github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/clui"
-	"github.com/aserto-dev/go-utils/logger"
 	"github.com/golang/mock/gomock"
 	"io"
 )

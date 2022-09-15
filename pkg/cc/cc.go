@@ -13,8 +13,8 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/retriever"
+	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/clui"
-	"github.com/aserto-dev/go-utils/logger"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )

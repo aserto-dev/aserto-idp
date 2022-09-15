@@ -11,7 +11,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
-	"github.com/aserto-dev/go-utils/logger"
+	logger "github.com/aserto-dev/aserto-logger"
 )
 
 func main() {
