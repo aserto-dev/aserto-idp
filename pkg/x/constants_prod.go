@@ -1,9 +1,9 @@
 package x
 
 const (
-	// AppName -- application name
+	// AppName -- application name.
 	AppName = "aserto idp"
-	// DefaultEnv -- default service environment
+	// DefaultEnv -- default service environment.
 	DefaultEnv string = EnvProduction
 )
 

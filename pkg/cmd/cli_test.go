@@ -1,9 +1,10 @@
-package cmd
+package cmd_test
 
 import (
 	"testing"
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/go-grpc/aserto/common/info/v1"
@@ -11,6 +12,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	checkForUpdates  = cmd.CheckForUpdates
+	downloadProvider = cmd.DownloadProvider
+	validatePlugin   = cmd.ValidatePlugin
 )
 
 func TestInvalidDownloadProvider(t *testing.T) {

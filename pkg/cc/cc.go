@@ -20,7 +20,7 @@ import (
 )
 
 // CC contains dependencies that are cross cutting and are needed in most
-// of the providers that make up this application
+// of the providers that make up this application.
 type CC struct {
 	Context     context.Context
 	Config      *config.Config
@@ -43,13 +43,13 @@ func (c *CC) GetRemotePluginsInfo() (map[string]map[string][]string, error) {
 	return c.pluginsInfo.GetInfo()
 }
 
-// ProviderExists returns true if the provider has already been added to the context
+// ProviderExists returns true if the provider has already been added to the context.
 func (c *CC) ProviderExists(name string) bool {
 	_, ok := c.providers[name]
 	return ok
 }
 
-// AddProvider to the context
+// AddProvider to the context.
 func (c *CC) AddProvider(prov provider.Provider) error {
 	if c.providers == nil {
 		c.providers = make(map[string]provider.Provider)
@@ -67,12 +67,12 @@ func (c *CC) GetProviders() map[string]provider.Provider {
 	return c.providers
 }
 
-// GetProvider with the given name
+// GetProvider with the given name.
 func (c *CC) GetProvider(name string) provider.Provider {
 	return c.providers[name]
 }
 
-// Dispose all the resources. This can be called any number of times
+// Dispose all the resources. This can be called any number of times.
 func (c *CC) Dispose() {
 	for _, provider := range c.providers {
 		provider.Kill()
@@ -88,7 +88,7 @@ func (c *CC) ConnectRetriever() error {
 	return nil
 }
 
-// LoadConfig loads the plugin and logger config from a configuration file
+// LoadConfig loads the plugin and logger config from a configuration file.
 func (c *CC) LoadConfig(path string) error {
 	cfg, err := config.NewConfig(path, c.Log)
 	if err != nil {

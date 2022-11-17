@@ -7,7 +7,7 @@ const (
 	PluginPrefix   string = "aserto-idp-plugin-"
 )
 
-// environments
+// environments.
 const (
 	EnvProduction string = "prod"
 )

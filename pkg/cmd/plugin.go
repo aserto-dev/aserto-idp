@@ -87,6 +87,8 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType api.Con
 			if field.Type == reflect.TypeOf(0) {
 				field.Tag = reflect.StructTag(fmt.Sprintf("name:%q help:%q group:%q Flags", flagName, flagDescription, groupName))
 			}
+		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_UNKNOWN:
+		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_JSON:
 		}
 
 		structFields = append(structFields, field)

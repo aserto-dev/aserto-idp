@@ -10,14 +10,13 @@ require (
 	github.com/aserto-dev/clui v0.8.1
 	github.com/aserto-dev/go-grpc v0.8.31
 	github.com/aserto-dev/idp-plugin-sdk v0.8.2
-	github.com/aserto-dev/mage-loot v0.8.9
 	github.com/containerd/containerd v1.6.6
 	github.com/golang/mock v1.6.0
 	github.com/google/go-containerregistry v0.9.0
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/go-plugin v1.4.4
 	github.com/hashicorp/go-version v1.5.0
-	github.com/magefile/mage v1.13.0
+	github.com/magefile/mage v1.14.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.28.0
@@ -43,7 +42,6 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/gitleaks/go-gitdiff v0.7.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/subcommands v1.0.1 // indirect
@@ -54,7 +52,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
-	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.4 // indirect
 	github.com/kyokomi/emoji v2.2.4+incompatible // indirect
@@ -88,8 +85,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
-	github.com/ulikunitz/xz v0.5.10 // indirect
-	github.com/zricethezav/gitleaks/v8 v8.3.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect

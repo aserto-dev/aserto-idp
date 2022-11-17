@@ -15,38 +15,29 @@ on:
       - main
 env:
   VAULT_ADDR: https://vault.eng.aserto.com/
-  GO_VERSION: "1.17"
+  GO_VERSION: "1.19"
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Read Configuration
-        uses: hashicorp/vault-action@v2.4.1
+        uses: hashicorp/vault-action@v2.4.3
         id: vault
         with:
           url: ${{ env.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
             kv/data/github  "SSH_PRIVATE_KEY"     | SSH_PRIVATE_KEY;
-      - name: Install Vault CLI
-        uses: innovationnorway/setup-vault@v1.0.3
-        with:
-          version: 1.4.2
-      - name: Renew Vault Token
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-        run: |
-          vault token renew
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Setup caching
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -80,7 +71,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Read Configuration
-        uses: hashicorp/vault-action@v2.4.1
+        uses: hashicorp/vault-action@v2.4.3
         id: vault
         with:
           url: ${{ env.VAULT_ADDR }}
@@ -90,24 +81,15 @@ jobs:
             kv/data/github    "READ_WRITE_TOKEN"                        | READ_WRITE_TOKEN;
             kv/data/github    "ASERTO_TAP"                              | ASERTO_TAP;
             kv/data/gcp       "SERVICE_ACCOUNT_GITHUB_ACTIONS_RELEASE"  | SERVICE_ACCOUNT_GITHUB_ACTIONS_RELEASE;
-      - name: Install Vault CLI
-        uses: innovationnorway/setup-vault@v1.0.3
-        with:
-          version: 1.4.2
-      - name: Renew Vault Token
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-        run: |
-          vault token renew
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Setup caching
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -135,26 +117,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Read Configuration
-        uses: hashicorp/vault-action@v2.4.1
+        uses: hashicorp/vault-action@v2.4.3
         id: vault
         with:
           url: ${{ env.VAULT_ADDR }}
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
             kv/data/github  "ROOT_TOKEN"        | ROOT_TOKEN;
-      - name: Install Vault CLI
-        uses: innovationnorway/setup-vault@v1.0.3
-        with:
-          version: 1.4.2
-      - name: Renew Vault Token
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-        run: |
-          vault token renew
       - name: Download exe
         id: download_exe
         shell: bash

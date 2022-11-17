@@ -18,8 +18,7 @@ type DeleteCmd struct {
 	NoUpdateCheck bool     `short:"n" help:"Don't check for plugins updates"`
 }
 
-func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error { //nolint : funlen // tbd
-
+func (cmd *DeleteCmd) Run(context *kong.Context, c *cc.CC) error { //nolint: funlen, gocyclo // to be refactored
 	if cmd.From == "" {
 		return status.Error(codes.InvalidArgument, "no '--from' idp was provided")
 	}

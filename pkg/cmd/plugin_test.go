@@ -1,10 +1,11 @@
-package cmd
+package cmd_test
 
 import (
 	"os"
 	"testing"
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	"github.com/aserto-dev/clui"
 	"github.com/aserto-dev/go-grpc/aserto/common/info/v1"
@@ -31,7 +32,7 @@ func TestNewPlugin(t *testing.T) {
 	pluginClient.EXPECT().Info(gomock.Any(), gomock.Any()).Return(providerInfo, nil)
 	provider.EXPECT().GetName().Return("test-name")
 
-	plugin, err := NewPlugin(provider, c)
+	plugin, err := cmd.NewPlugin(provider, c)
 	assert.NoError(err)
 	assert.NotNil(plugin)
 	assert.Equal(plugin.Description, "test")

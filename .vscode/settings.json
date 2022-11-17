@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
         "alecthomas",
+        "aserto",
         "clui",
         "Errored",
         "funlen",
         "gochecknoglobals",
+        "gocyclo",
         "gomock",
         "grpcplugin",
         "hashicorp",
@@ -13,6 +15,7 @@
         "ldflag",
         "mockgen",
         "Msgf",
+        "nolint",
         "nosetting",
         "protobuf",
         "stretchr",
