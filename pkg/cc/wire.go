@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"github.com/aserto-dev/clui"
-	logger "github.com/aserto-dev/aserto-logger"
+	"github.com/aserto-dev/logger"
 	"github.com/google/wire"
 )
 

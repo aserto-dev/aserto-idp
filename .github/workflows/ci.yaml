@@ -132,8 +132,8 @@ jobs:
         id: download_exe
         shell: bash
         run: |
-          hub release download "${GITHUB_REF#refs/tags/}" -i '*windows_x86_64*.zip'
-          printf "::set-output name=zip::%s\n" *.zip
+          hub release download "${GITHUB_REF#refs/tags/}" -i '*windows_x86_64*.zip'          
+          printf "zip=%s\n" *.zip >> $GITHUB_OUTPUT
           unzip -o *.zip && rm -v *.zip
         env:
           GITHUB_TOKEN: ${{ steps.vault.outputs.ROOT_TOKEN }}
@@ -152,7 +152,7 @@ jobs:
         run: |
           mkdir -p build
           msi="$(basename "$ZIP_FILE" ".zip").msi"
-          printf "::set-output name=msi::%s\n" "$msi"
+          printf "msi=${msi}" >> $GITHUB_OUTPUT
           go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "${GITHUB_REF#refs/tags/}"
       - name: Upload MSI
         shell: bash

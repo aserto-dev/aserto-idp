@@ -84,7 +84,7 @@ linters:
     - gocritic
     - gocyclo
     - godot
-    # - goerr113 - temporary disabled
+    # - goerr113 # temporary disabled
     - gofmt
     - goimports
     - goprintffuncname

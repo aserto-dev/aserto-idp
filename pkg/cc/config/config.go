@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	logger "github.com/aserto-dev/aserto-logger"
+	"github.com/aserto-dev/logger"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
