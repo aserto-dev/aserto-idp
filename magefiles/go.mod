@@ -1,6 +1,6 @@
 module github.com/aserto-dev/aserto-idp/magefiles
 
-go 1.19
+go 1.17
 
 require (
 	github.com/aserto-dev/mage-loot v0.8.10
