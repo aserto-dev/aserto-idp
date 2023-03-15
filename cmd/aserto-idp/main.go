@@ -11,7 +11,7 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/provider"
 	"github.com/aserto-dev/aserto-idp/pkg/provider/finder"
 	"github.com/aserto-dev/aserto-idp/pkg/x"
-	logger "github.com/aserto-dev/aserto-logger"
+	"github.com/aserto-dev/logger"
 )
 
 func main() {
@@ -65,7 +65,6 @@ func appStart(c *cc.CC) error {
 			NoExpandSubcommands: false,
 		}),
 		kong.Bind(c),
-		kong.Vars{"defaultEnv": x.DefaultEnv},
 	}
 
 	for _, pluginPath := range pluginPaths {

@@ -41,7 +41,7 @@ func NewIDPProvider(log *zerolog.Logger, path string) Provider {
 	return &idpProvider
 }
 
-// Gets the plugin client. Subsequent calls to this will return the same client
+// Gets the plugin client. Subsequent calls to this will return the same client.
 func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) {
 
 	// Subsequent calls to this will return the same client.
@@ -50,7 +50,7 @@ func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) 
 		return nil, err
 	}
 
-	// Request the plugin
+	// Request the plugin.
 	raw, err := rpcClient.Dispense("idp-plugin")
 	if err != nil {
 		return nil, err
@@ -59,17 +59,17 @@ func (idpProvider *IDPProvider) PluginClient() (grpcplugin.PluginClient, error) 
 	return raw.(grpcplugin.PluginClient), nil
 }
 
-// Kills the plugin process
+// Kills the plugin process.
 func (idpProvider *IDPProvider) Kill() {
 	idpProvider.client.Kill()
 }
 
-// Gets the name of the provider
+// Gets the name of the provider.
 func (idpProvider *IDPProvider) GetName() string {
 	return idpProvider.Name
 }
 
-// Gets the path of the provider
+// Gets the path of the provider.
 func (idpProvider *IDPProvider) GetPath() string {
 	return idpProvider.Path
 }

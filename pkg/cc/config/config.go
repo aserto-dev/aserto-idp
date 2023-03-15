@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	logger "github.com/aserto-dev/aserto-logger"
+	"github.com/aserto-dev/logger"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -25,8 +25,6 @@ func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 	if configPath == "" {
 		return &Config{}, nil
 	}
-	configLogger := log.With().Str("component", "config").Logger()
-	log = &configLogger
 
 	exists, err := fileExists(configPath)
 	if err != nil {

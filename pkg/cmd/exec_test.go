@@ -1,4 +1,4 @@
-package cmd
+package cmd_test
 
 import (
 	"io"
@@ -7,11 +7,12 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
-	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/clui"
 	"github.com/aserto-dev/go-grpc/aserto/common/info/v1"
 	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/aserto-dev/logger"
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,7 @@ func TestRunExecWithoutFromPlugin(t *testing.T) {
 	assert.NoError(err)
 	c.Log = &zerolog.Logger{}
 	c.UI = clui.NewUIWithOutput(os.Stdout)
-	execCmd := &ExecCmd{To: "json"}
+	execCmd := &cmd.ExecCmd{To: "json"}
 
 	err = execCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -38,7 +39,7 @@ func TestRunExecWithoutToPlugin(t *testing.T) {
 	assert.NoError(err)
 	c.Log = &zerolog.Logger{}
 	c.UI = clui.NewUIWithOutput(os.Stdout)
-	execCmd := &ExecCmd{From: "json"}
+	execCmd := &cmd.ExecCmd{From: "json"}
 
 	err = execCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -52,7 +53,7 @@ func TestRunExecWithoutPluginsOnTheSystem(t *testing.T) {
 	assert.NoError(err)
 	c.Log = &zerolog.Logger{}
 	c.UI = clui.NewUIWithOutput(os.Stdout)
-	execCmd := &ExecCmd{From: "json", To: "okta", NoUpdateCheck: true}
+	execCmd := &cmd.ExecCmd{From: "json", To: "okta", NoUpdateCheck: true}
 
 	err = execCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -71,7 +72,7 @@ func TestRunExecWithoutToPluginOnTheSystem(t *testing.T) {
 
 	err = c.AddProvider(provider)
 	assert.NoError(err)
-	execCmd := &ExecCmd{From: "json", To: "okta", NoUpdateCheck: true}
+	execCmd := &cmd.ExecCmd{From: "json", To: "okta", NoUpdateCheck: true}
 
 	err = execCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -102,7 +103,7 @@ func TestRunExec(t *testing.T) {
 	assert.NoError(err)
 	err = c.AddProvider(toProvider)
 	assert.NoError(err)
-	execCmd := &ExecCmd{From: "okta", To: "json"}
+	execCmd := &cmd.ExecCmd{From: "okta", To: "json"}
 
 	fromProvider.EXPECT().PluginClient().Return(pluginClient, nil).AnyTimes()
 	pluginClient.EXPECT().Info(gomock.Any(), gomock.Any()).Return(providerInfo, nil).AnyTimes()

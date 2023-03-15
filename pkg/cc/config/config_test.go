@@ -1,4 +1,4 @@
-package config
+package config_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/aserto-dev/aserto-idp/pkg/cc/config"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +34,7 @@ func TestConfigDoesNotExist(t *testing.T) {
 	assert := require.New(t)
 	configPath := filepath.Join(t.TempDir(), "not_exist.yaml")
 
-	cfg, err := NewConfig(configPath, &log)
+	cfg, err := config.NewConfig(configPath, &log)
 	assert.NotNil(err)
 	assert.Nil(cfg)
 
@@ -55,7 +56,7 @@ plugins:
 `
 
 	configFilePath := getConfigFile(content, t)
-	cfg, err := NewConfig(configFilePath, &log)
+	cfg, err := config.NewConfig(configFilePath, &log)
 
 	assert.Nil(err)
 	assert.NotNil(cfg.Plugins["json"])
@@ -83,7 +84,7 @@ logging:
 `
 
 	configFilePath := getConfigFile(content, t)
-	cfg, err := NewConfig(configFilePath, &log)
+	cfg, err := config.NewConfig(configFilePath, &log)
 
 	assert.Nil(err)
 	assert.Nil(cfg.Plugins["aserto"])
@@ -100,7 +101,7 @@ plugins:
 `
 
 	configFilePath := getConfigFile(content, t)
-	cfg, err := NewConfig(configFilePath, &log)
+	cfg, err := config.NewConfig(configFilePath, &log)
 
 	assert.Nil(err)
 	assert.Nil(cfg.Logging)
