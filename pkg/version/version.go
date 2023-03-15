@@ -26,7 +26,7 @@ func GetVer() string {
 func GetVersionString() string {
 	buildInfo := version.GetBuildInfo(getVersion)
 
-	return fmt.Sprintf("%s g%s %s-%s [%s]",
+	return fmt.Sprintf("%s %s %s-%s [%s]",
 		buildInfo.Version,
 		buildInfo.Commit,
 		buildInfo.Os,
