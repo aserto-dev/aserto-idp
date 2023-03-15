@@ -10,7 +10,7 @@ require (
 	github.com/aserto-dev/go-grpc v0.8.56
 	github.com/aserto-dev/idp-plugin-sdk v0.8.2
 	github.com/aserto-dev/logger v0.0.3
-	github.com/containerd/containerd v1.6.6
+	github.com/containerd/containerd v1.6.18
 	github.com/golang/mock v1.6.0
 	github.com/google/go-containerregistry v0.9.0
 	github.com/google/wire v0.5.0
@@ -60,7 +60,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
