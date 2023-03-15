@@ -1,9 +1,10 @@
-package cmd
+package cmd_test
 
 import (
 	"testing"
 
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/go-grpc/aserto/common/info/v1"
@@ -23,7 +24,7 @@ func TestInvalidDownloadProvider(t *testing.T) {
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 
-	err = downloadProvider("plugin-name", c)
+	err = cmd.DownloadProvider("plugin-name", c)
 	assert.NotNil(err)
 	assert.Equal(err.Error(), "plugin 'plugin-name' does not exists")
 }
@@ -43,7 +44,7 @@ func TestDownloadProvider(t *testing.T) {
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	c.Retriever.(*mocks.MockRetriever).EXPECT().Download("okta", "0.1.0").Return(nil)
 
-	err = downloadProvider("okta", c)
+	err = cmd.DownloadProvider("okta", c)
 	assert.NoError(err)
 }
 
@@ -63,7 +64,7 @@ func TestCheckForUpdatesNoUpdates(t *testing.T) {
 	provider.EXPECT().GetName().Return("auth0")
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 
-	updates, latestVer, err := checkForUpdates(provider, c)
+	updates, latestVer, err := cmd.CheckForUpdates(provider, c)
 	assert.NoError(err)
 	assert.False(updates)
 	assert.Empty(latestVer)
@@ -85,7 +86,7 @@ func TestCheckForUpdatesWithUpdates(t *testing.T) {
 	provider.EXPECT().GetName().Return("auth0")
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 
-	updates, latestVer, err := checkForUpdates(provider, c)
+	updates, latestVer, err := cmd.CheckForUpdates(provider, c)
 	assert.NoError(err)
 	assert.True(updates)
 	assert.Equal(latestVer, "0.2.0")

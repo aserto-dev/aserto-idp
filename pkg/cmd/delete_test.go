@@ -1,4 +1,4 @@
-package cmd
+package cmd_test
 
 import (
 	"io"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/clui"
@@ -24,7 +25,7 @@ func TestRunDeleteWithoutFromPlugin(t *testing.T) {
 	assert.NoError(err)
 	c.Log = &zerolog.Logger{}
 	c.UI = clui.NewUIWithOutput(os.Stdout)
-	deleteCmd := &DeleteCmd{}
+	deleteCmd := &cmd.DeleteCmd{}
 
 	err = deleteCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -38,7 +39,7 @@ func TestRunDeleteWithoutPluginsOnTheSystem(t *testing.T) {
 	assert.NoError(err)
 	c.Log = &zerolog.Logger{}
 	c.UI = clui.NewUIWithOutput(os.Stdout)
-	deleteCmd := &DeleteCmd{From: "okta", NoUpdateCheck: true}
+	deleteCmd := &cmd.DeleteCmd{From: "okta", NoUpdateCheck: true}
 
 	err = deleteCmd.Run(&kong.Context{}, c)
 	assert.NotNil(err)
@@ -64,7 +65,7 @@ func TestRunDeleteWithoutUserIds(t *testing.T) {
 
 	err = c.AddProvider(provider)
 	assert.NoError(err)
-	deleteCmd := &DeleteCmd{From: "okta"}
+	deleteCmd := &cmd.DeleteCmd{From: "okta"}
 
 	provider.EXPECT().PluginClient().Return(pluginClient, nil).Times(2)
 	pluginClient.EXPECT().Info(gomock.Any(), gomock.Any()).Return(providerInfo, nil).AnyTimes()
@@ -103,7 +104,7 @@ func TestRunDeleteWithUserIds(t *testing.T) {
 
 	err = c.AddProvider(provider)
 	assert.NoError(err)
-	deleteCmd := &DeleteCmd{From: "okta", UserIds: []string{"someUserID"}}
+	deleteCmd := &cmd.DeleteCmd{From: "okta", UserIds: []string{"someUserID"}}
 
 	provider.EXPECT().PluginClient().Return(pluginClient, nil).AnyTimes()
 	pluginClient.EXPECT().Info(gomock.Any(), gomock.Any()).Return(providerInfo, nil).AnyTimes()

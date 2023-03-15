@@ -65,7 +65,6 @@ func appStart(c *cc.CC) error {
 			NoExpandSubcommands: false,
 		}),
 		kong.Bind(c),
-		kong.Vars{"defaultEnv": x.DefaultEnv},
 	}
 
 	for _, pluginPath := range pluginPaths {

@@ -25,8 +25,6 @@ func NewConfig(configPath string, log *zerolog.Logger) (*Config, error) {
 	if configPath == "" {
 		return &Config{}, nil
 	}
-	configLogger := log.With().Str("component", "config").Logger()
-	log = &configLogger
 
 	exists, err := fileExists(configPath)
 	if err != nil {

@@ -74,7 +74,7 @@ func getFlagStruct(flagName, flagDescription, groupName string, flagType api.Con
 	for i := 0; i < flagStructType.NumField(); i++ {
 		field := flagStructType.Field(i)
 
-		switch flagType {
+		switch flagType { //nolint:exhaustive
 		case api.ConfigElementType_CONFIG_ELEMENT_TYPE_BOOLEAN:
 			if field.Type == reflect.TypeOf(true) {
 				field.Tag = reflect.StructTag(fmt.Sprintf("name:%q help:%q group:%q Flags", flagName, flagDescription, groupName))

@@ -1,4 +1,4 @@
-package cmd
+package cmd_test
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/aserto-dev/aserto-idp/pkg/cc"
+	"github.com/aserto-dev/aserto-idp/pkg/cmd"
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/clui"
@@ -30,7 +31,7 @@ func TestRunGetPluginInvalidName(t *testing.T) {
 	err = c.AddProvider(provider)
 	assert.NoError(err)
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "test-plugin"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "test-plugin"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 
@@ -52,7 +53,7 @@ func TestRunGetPluginWithoutVersion(t *testing.T) {
 	err = c.AddProvider(provider)
 	assert.NoError(err)
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	c.Retriever.(*mocks.MockRetriever).EXPECT().Download("okta", "0.1.0").Return(nil)
@@ -74,7 +75,7 @@ func TestRunGetPluginWithLatest(t *testing.T) {
 	err = c.AddProvider(provider)
 	assert.NoError(err)
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta:latest"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta:latest"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	c.Retriever.(*mocks.MockRetriever).EXPECT().Download("okta", "0.1.0").Return(nil)
@@ -96,7 +97,7 @@ func TestRunGetPluginWithValidVersion(t *testing.T) {
 	err = c.AddProvider(provider)
 	assert.NoError(err)
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta:0.1.0"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta:0.1.0"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	c.Retriever.(*mocks.MockRetriever).EXPECT().Download("okta", "0.1.0").Return(nil)
@@ -118,7 +119,7 @@ func TestRunGetPluginWithInvalidVersion(t *testing.T) {
 	err = c.AddProvider(provider)
 	assert.NoError(err)
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta:0.3.0"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta:0.3.0"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	c.Retriever.(*mocks.MockRetriever).EXPECT().Download("okta", "0.3.0").Return(errors.New("Invalid version"))
@@ -143,7 +144,7 @@ func TestRunGetPluginAlreadyAtLatest(t *testing.T) {
 	pluginClient := mocks.NewMockPluginClient(ctrl)
 	providerInfo := &proto.InfoResponse{Build: &info.BuildInfo{Commit: "commit", Version: "0.1.0"}, Description: "test"}
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta:0.1.0"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta:0.1.0"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	provider.EXPECT().PluginClient().Return(pluginClient, nil)
@@ -168,7 +169,7 @@ func TestRunGetPluginNotAtLatest(t *testing.T) {
 	pluginClient := mocks.NewMockPluginClient(ctrl)
 	providerInfo := &proto.InfoResponse{Build: &info.BuildInfo{Commit: "commit", Version: "v0.1.0"}, Description: "test"}
 	pluginsVersions := []string{"okta-0.1.0", "auth0-0.2.0"}
-	getCmd := &GetPluginCmd{Plugin: "okta:0.1.0"}
+	getCmd := &cmd.GetPluginCmd{Plugin: "okta:0.1.0"}
 
 	c.Retriever.(*mocks.MockRetriever).EXPECT().List().Return(pluginsVersions, nil)
 	provider.EXPECT().PluginClient().Return(pluginClient, nil)
