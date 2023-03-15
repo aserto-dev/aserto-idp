@@ -9,9 +9,9 @@ import (
 	"github.com/aserto-dev/aserto-idp/pkg/mocks"
 	"github.com/aserto-dev/clui"
 	"github.com/aserto-dev/go-grpc/aserto/common/info/v1"
-
-	logger "github.com/aserto-dev/aserto-logger"
 	proto "github.com/aserto-dev/go-grpc/aserto/idpplugin/v1"
+	"github.com/aserto-dev/logger"
+
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
